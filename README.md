@@ -20,20 +20,44 @@ WindVeal (formerly Dave Chatbot) is a modern, hybrid AI assistant built with **N
 
 ```
 WindVeal/
-├── app/                 # Next.js App Router
-│   ├── api/             # Serverless API Routes (Chat, Auth)
-│   └── page.js          # Main Frontend Interface
-├── components/          # React Components
-│   ├── ChatInterface.js # Main Chat UI
-│   ├── AuthModal.js     # Login/Register Modals
-│   └── Settings.js      # Theme & Preferences
+├── public/
+│   ├── index.html                    # Welcome landing page
+│   ├── styles/
+│   │   └── styles.css               # Welcome page styles
+│   ├── scripts/
+│   │   └── scripts.js               # Welcome page interactions
+│   └── favicon.ico
+├── app/                             # Next.js App Router (Main Chat App)
+│   ├── api/
+│   │   ├── auth/
+│   │   │   ├── login/route.js       # Login endpoint
+│   │   │   └── register/route.js    # Registration endpoint
+│   │   ├── chat/route.js            # Chat API (Gemini integration)
+│   │   └── history/route.js         # Chat history storage
+│   ├── lib/
+│   │   └── db.js                    # Database connection pool
+│   ├── globals.css                  # Global Tailwind styles
+│   ├── layout.js                    # Root layout
+│   └── page.js                      # Main chat interface
+├── components/                      # React Components
+│   ├── AuthModal.js                 # Login/Register Modal
+│   └── Settings.js                  # Theme & Font Size Settings
 ├── data/
-│   ├── intents.json     # The "Local Brain" knowledge base
-│   └── persona.json     # The "Cloud Brain" personality
-├── utils/
-│   └── localBrain.js    # Logic for instant client-side answers
-└── public/              # Static assets
+│   ├── intents.json                 # Local Brain knowledge base
+│   └── persona.json                 # Cloud Brain personality
+├── .env                             # Environment variables
+├── jsconfig.json                    # JavaScript config
+├── tailwind.config.js               # Tailwind CSS configuration
+├── postcss.config.js                # PostCSS configuration
+├── package.json                     # Dependencies
+└── README.md                        # This file
 ```
+
+## 📱 Multi-Platform Deployment
+
+- **Web App:** Hosted on Vercel - Full-featured chat interface
+- **Mobile Apps:** Coming soon for iOS (App Store) and Android (Google Play)
+- **Landing Page:** `public/index.html` - Marketing website for the project
 
 ---
 
@@ -94,6 +118,16 @@ Edit `data/persona.json` to change how the AI behaves during complex conversatio
 3. Import your WindVeal repository.
 4. In the **Environment Variables** section, add your `GOOGLE_API_KEY`, `POSTGRES_URL`, and `NEXTAUTH_SECRET`.
 5. Click **Deploy**.
+
+The landing page (`public/index.html`) will be served as a static file, and the Next.js app will run on the same domain.
+
+## 📲 Mobile App Development
+
+Mobile apps for iOS and Android are planned using React Native or Flutter. They will:
+- Share the same API endpoints as the web app
+- Support offline functionality with the local brain
+- Provide native platform features (push notifications, etc.)
+- Sync chat history with user accounts
 
 ## License
 All copyright observed. This program should not be used without my permission or for any business purpose without first consulting the programmer at the WhatsApp number below.
