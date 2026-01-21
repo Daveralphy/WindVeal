@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+*.log
+davechatbot.db
+davechatbot.sock
+
+# Node.js / Next.js (for the rebuild)
+node_modules/
+.next/
+out/
+build/
+
+# Environment Variables (CRITICAL - Do not push these)
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,32 @@
+[
+  {
+    "tag": "identity",
+    "patterns": ["who are you", "what are you", "introduce yourself"],
+    "response": "I am WindVeal, a hybrid AI assistant. I have a local brain for fast answers and a cloud brain for complex thinking."
+  },
+  {
+    "tag": "status",
+    "patterns": ["how are you", "how are you doing", "what's up"],
+    "response": "I'm functioning perfectly and ready to help! How can I assist you today?"
+  },
+  {
+    "tag": "capabilities",
+    "patterns": ["what can you do", "help me", "features"],
+    "response": "I can answer questions, help with creative writing, solve problems, and chat about various topics. Try asking me '1+1' or 'what is a noun'!"
+  },
+  {
+    "tag": "math_simple",
+    "patterns": ["one plus one", "1+1", "1 + 1"],
+    "response": "1 + 1 = 2"
+  },
+  {
+    "tag": "math_simple_2",
+    "patterns": ["two plus two", "2+2", "2 + 2"],
+    "response": "2 + 2 = 4"
+  },
+  {
+    "tag": "definition_noun",
+    "patterns": ["what is a noun", "define noun"],
+    "response": "A noun is a word that functions as the name of a specific object or set of objects, such as living creatures, places, actions, qualities, states of existence, or ideas."
+  }
+]

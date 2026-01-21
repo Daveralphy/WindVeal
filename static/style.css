@@ -1,0 +1,994 @@
+/* General Styling & Box Model Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    /* Light Mode Variables (Adjusted to match screenshot) */
+    --primary-color: #6a0dad; /* A deep purple, replacing green for main accents */
+    --primary-dark: #5a099a; /* Darker purple for hover/active states */
+    --secondary-color: #2196F3; /* Retain original blue if needed elsewhere, though purple is dominant */
+    --accent-color: #FFC107; /* Amber, potentially for warnings/highlights */
+    --text-color: #333; /* Dark text for general content */
+    --text-light: #ffffff; /* White text for buttons/dark backgrounds */
+    --bg-light: #f9fafb; /* Very light grey for chat area background */
+    --bg-dark: #4b5563; /* Medium dark grey for side menu */
+    --card-bg: #ffffff; /* White for card backgrounds */
+    --border-color: #e5e7eb; /* Lighter grey for borders */
+    --shadow-color: rgba(0, 0, 0, 0.08); /* Subtle shadow */
+    --font-family: 'Inter', sans-serif;
+
+    /* Specific UI Element Colors */
+    --header-bg-color: var(--card-bg); /* Header is now white/light grey */
+    --header-text-color: var(--text-color); /* Header text is dark */
+    --new-chat-btn-bg: #8B5CF6; /* Purple for "New Chat" button */
+    --new-chat-btn-text: var(--text-light);
+    --menu-btn-bg: var(--card-bg); /* White for "Menu" button */
+    --menu-btn-text: var(--text-color);
+    --bot-message-bg: #f0f2f5; /* Very light grey for bot messages */
+    --bot-message-text: var(--text-color);
+    --bot-icon-bg: #8B5CF6; /* Purple for bot icon */
+    --bot-icon-color: var(--text-light);
+    --user-message-bg: #8B5CF6; /* Purple for user messages */
+    --user-message-text: var(--text-light);
+    --input-bg: var(--card-bg); /* White for input background */
+    --input-border: var(--border-color);
+    --input-text: var(--text-color);
+    --send-btn-bg: #8B5CF6; /* Purple for send button */
+    --send-btn-icon: var(--text-light);
+    --disclaimer-text-color: #6b7280; /* Medium grey for disclaimer */
+
+    /* Dark Mode Variables (default to light mode, will be overridden by .dark-mode) */
+    --dark-primary-color: #7c3aed; /* Slightly lighter purple for dark mode */
+    --dark-primary-dark: #6d28d9;
+    --dark-secondary-color: #64B5F6;
+    --dark-accent-color: #FFD54F;
+    --dark-text-color: #e0e0e0;
+    --dark-text-light: #ffffff;
+    --dark-bg-light: #1f2937; /* Darker background for main content */
+    --dark-bg-dark: #111827; /* Even darker for side menu/footer */
+    --dark-card-bg: #2d3748; /* Darker card background */
+    --dark-border-color: #4a5568;
+    --dark-shadow-color: rgba(0, 0, 0, 0.5);
+
+    /* Dark Mode Specific UI Element Colors */
+    --dark-header-bg-color: var(--dark-card-bg);
+    --dark-header-text-color: var(--dark-text-color);
+    --dark-new-chat-btn-bg: var(--dark-primary-color);
+    --dark-new-chat-btn-text: var(--dark-text-light);
+    --dark-menu-btn-bg: var(--dark-card-bg);
+    --dark-menu-btn-text: var(--dark-text-color);
+    --dark-bot-message-bg: #374151; /* Darker grey for bot messages */
+    --dark-bot-message-text: #fdfdfd; /* Changed to black for better contrast in dark mode */
+    --dark-bot-icon-bg: var(--dark-primary-color);
+    --dark-bot-icon-color: var(--dark-text-light);
+    --dark-user-message-bg: var(--dark-user-message-bg);
+    --dark-user-message-text: var(--dark-user-message-text);
+    --dark-input-bg: var(--dark-card-bg);
+    --dark-input-border: var(--dark-border-color);
+    --dark-input-text: var(--dark-input-text);
+    --dark-send-btn-bg: var(--dark-primary-color);
+    --dark-send-btn-icon: var(--dark-text-light);
+    --dark-disclaimer-text-color: #9ca3af;
+}
+
+/* Dark Mode Overrides */
+html.dark-mode {
+    --primary-color: var(--dark-primary-color);
+    --primary-dark: var(--dark-primary-dark);
+    --secondary-color: var(--dark-secondary-color);
+    --accent-color: var(--dark-accent-color);
+    --text-color: var(--dark-text-color);
+    --text-light: var(--dark-text-light);
+    --bg-light: var(--dark-bg-light);
+    --bg-dark: var(--dark-bg-dark);
+    --card-bg: var(--dark-card-bg);
+    --border-color: var(--dark-border-color);
+    --shadow-color: var(--dark-shadow-color);
+
+    /* Apply dark mode UI specific colors */
+    --header-bg-color: var(--dark-header-bg-color);
+    --header-text-color: var(--dark-header-text-color);
+    --new-chat-btn-bg: var(--dark-new-chat-btn-bg);
+    --new-chat-btn-text: var(--dark-new-chat-btn-text);
+    --menu-btn-bg: var(--dark-menu-btn-bg);
+    --menu-btn-text: var(--dark-menu-btn-text);
+    --bot-message-bg: var(--dark-bot-message-bg); /* Use the dark mode specific bot message background */
+    --bot-message-text: var(--dark-bot-message-text); /* Use the updated dark mode bot message text */
+    --bot-icon-bg: var(--dark-bot-icon-bg);
+    --bot-icon-color: var(--dark-bot-icon-color);
+    --dark-user-message-bg: var(--dark-user-message-bg);
+    --dark-user-message-text: var(--dark-user-message-text);
+    --input-bg: var(--dark-input-bg);
+    --input-border: var(--dark-input-border);
+    --input-text: var(--dark-input-text);
+    --send-btn-bg: var(--dark-send-btn-bg);
+    --send-btn-icon: var(--dark-send-btn-icon);
+    --disclaimer-text-color: var(--dark-disclaimer-text-color);
+}
+
+/* Common Heights for Calculation */
+:root {
+    --header-height: 5rem; /* Approximate height of the header including padding */
+    --chat-input-height: 5rem; /* Approximate height of the fixed chat input area including padding/shadow for mobile */
+    --actual-chat-input-height: 6rem; /* Estimated height of the fixed input area (approx 96px) */
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-light); /* Apply base background */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden; /* Keep this to manage overall app layout within viewport */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Main App Wrapper */
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: var(--card-bg); /* App background color */
+    box-shadow: 0 4px 15px var(--shadow-color);
+    border-radius: 12px;
+    overflow: hidden;
+
+    transition: max-width 0.3s ease-in-out, margin 0.3s ease-in-out, border-radius 0.3s ease-in-out, background-color 0.3s ease, box-shadow 0.3s ease;
+
+    @media (min-width: 768px) {
+        max-width: 90%;
+        height: 95vh;
+        margin: 2.5vh auto;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    @media (max-width: 768px) { /* Standardized to 768px */
+        border-radius: 0;
+        margin: 0;
+        height: 100vh;
+    }
+}
+
+/* Header */
+.header {
+    background-color: var(--header-bg-color); /* Updated to new header background */
+    color: var(--header-text-color); /* Updated to new header text color */
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px var(--shadow-color); /* More subtle shadow */
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    margin: 0; /* Align left */
+    flex-grow: 0; /* Don't grow to center */
+    text-align: left; /* Align left */
+    margin-right: auto; /* Push buttons to the right */
+}
+
+.header-left {
+    /* No longer needed as h1 aligns left */
+    display: none;
+}
+
+/* New Chat Button in Header */
+.new-chat-btn {
+    background-color: var(--new-chat-btn-bg);
+    color: var(--new-chat-btn-text);
+    padding: 0.5rem 1.25rem;
+    border: none;
+    border-radius: 9999px; /* Fully rounded */
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-left: auto; /* Push to the left of the menu button */
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.new-chat-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+/* Hamburger/Menu Button */
+.menu-btn {
+    background-color: var(--menu-btn-bg);
+    color: var(--menu-btn-text);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px; /* Fully rounded */
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Space between icon and text */
+    margin-left: 0.75rem; /* Space from New Chat button */
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.menu-btn:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.hamburger-icon {
+    width: 20px; /* Smaller icon */
+    height: 16px; /* Smaller icon */
+    position: relative; /* For the bar positioning if needed */
+    display: flex; /* Override existing display if necessary */
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 0; /* Remove padding */
+    cursor: pointer;
+    z-index: 1; /* Reset z-index if needed */
+}
+
+.hamburger-icon .bar {
+    width: 100%;
+    height: 2px; /* Thinner bars */
+    background-color: var(--menu-btn-text); /* Matches menu button text color */
+    border-radius: 1px;
+    transition: background-color 0.3s ease;
+}
+
+
+/* Main Content Area */
+.content-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0;
+    overflow: hidden;
+
+    @media (max-width: 768px) {
+        height: calc(100vh - var(--header-height));
+    }
+}
+
+/* Card Styling for Auth and Modals */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+    padding: 2rem;
+    width: 100%;
+    margin: auto;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+    @media (min-width: 768px) {
+        max-width: 600px;
+    }
+    @media (min-width: 1200px) {
+        max-width: 800px;
+    }
+    @media (min-width: 1600px) {
+        max-width: 900px;
+    }
+}
+
+/* Auth Section */
+.auth-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+    height: 100%; /* This will work with max-height to ensure flex layout and overflow */
+    justify-content: center;
+    padding: 1.5rem;
+
+    /* --- NEW/UPDATED FOR SCROLLABILITY --- */
+    max-height: 90vh; /* Limits the height of the auth card to 90% of the viewport height */
+    overflow-y: auto; /* Enables vertical scrolling within the card if content exceeds max-height */
+    /* --- END NEW/UPDATED --- */
+}
+
+.auth-section h2 {
+    color: var(--primary-color); /* Match new primary purple */
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+    transition: color 0.3s ease;
+}
+
+.auth-section form {
+    width: 100%;
+    max-width: 350px; /* Constrain form elements for readability */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0 auto; /* Ensures the form itself is centered horizontally within auth-section */
+    padding-bottom: 1rem; /* Added padding to ensure bottom elements are not clipped */
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.input-group input[type="text"],
+.input-group input[type="password"],
+.input-group input[type="email"] { /* Added email input type */
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus,
+.input-group input[type="email"]:focus {
+    border-color: var(--primary-color); /* Focus color matches new primary */
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(106, 13, 173, 0.2); /* Purple shadow */
+}
+
+.btn {
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease, color 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+}
+
+.primary-btn {
+    background-color: var(--primary-color); /* Main button color */
+    color: var(--text-light);
+}
+
+.primary-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.link-btn {
+    background: none;
+    color: var(--primary-color); /* Link color matches primary */
+    text-decoration: underline;
+    font-size: 0.95rem;
+    padding: 0.5rem;
+    margin-top: 1rem;
+    align-self: center;
+    transition: color 0.3s ease;
+}
+
+.link-btn:hover {
+    color: var(--primary-dark); /* Darker on hover */
+    text-decoration: none;
+}
+
+.message {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.message.success {
+    color: green;
+}
+
+.message.error {
+    color: red;
+}
+
+.toggle-auth {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Chat Section */
+.chat-section {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+    background-color: var(--bg-light); /* Chat area background */
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Chat Box - The scrollable message area */
+.chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    padding-bottom: 4rem; /* Adjusted for desktop (approx height of input area + margin) */
+    background-color: var(--bg-light); /* Background for messages */
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Increased gap between messages to match screenshot */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+
+    @media (max-width: 768px) {
+        /* Removed padding-bottom here as chat-section height calculation handles it */
+    }
+}
+
+.chat-message-row { /* Wrapper for message + icon */
+    display: flex;
+    align-items: flex-start; /* Align icon and message at the top */
+    gap: 0.75rem; /* Space between icon and message bubble */
+}
+
+.bot-icon-wrapper {
+    flex-shrink: 0; /* Prevent icon from shrinking */
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--bot-icon-bg);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--bot-icon-color);
+    font-size: 1.2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtle shadow for icon */
+}
+
+.chat-box .message {
+    padding: 0.75rem 1.2rem; /* Adjusted padding to match screenshot */
+    border-radius: 0.75rem; /* Rounded corners for message bubbles */
+    max-width: 80%; /* Limit bubble width */
+    word-wrap: break-word;
+    font-size: 1rem; /* Slightly larger font size */
+    line-height: 1.5;
+    text-align: left;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow for messages */
+}
+
+.chat-box .message.user {
+    background-color: var(--user-message-bg); /* User message background */
+    color: var(--user-message-text);
+    align-self: flex-end; /* Align user messages to the right */
+    margin-left: auto; /* Push to right */
+    border-bottom-right-radius: 0.25rem; /* Sharpen bottom right corner */
+}
+
+.chat-box .message.bot {
+    background-color: var(--bot-message-bg); /* Bot message background */
+    color: var(--bot-message-text);
+    align-self: flex-start; /* Ensures bot messages are on the left */
+    margin-right: auto; /* Pushes bot messages to the left */
+    border-bottom-left-radius: 0.25rem; /* Sharpen bottom left corner */
+}
+
+/* Chat Input Area */
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--input-bg); /* White background for input area */
+    border-top: 1px solid var(--border-color); /* Light border top */
+    box-shadow: 0 -4px 6px -1px var(--shadow-color), 0 -2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow upwards */
+    flex-shrink: 0;
+    border-radius: 0 0 8px 8px; /* Rounded bottom corners on desktop */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+
+    @media (max-width: 768px) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 100;
+        border-radius: 0; /* No rounded corners on mobile fixed bar */
+        height: var(--chat-input-height);
+    }
+}
+
+.user-input-field {
+    flex-grow: 1; /* Allows the input to grow and take available space */
+    flex-shrink: 1; /* Allows the input to shrink if needed */
+    min-width: 0; /* CRITICAL: Allows the input to shrink below its intrinsic content width in a flex container */
+    /* You can keep other styles like padding, border, border-radius, etc. */
+    padding: 10px 15px; /* Example padding, adjust as needed */
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    font-size: 1rem;
+    background-color: var(--input-bg); /* Using input-bg variable */
+    color: var(--input-text); /* Using input-text variable */
+}
+
+.user-input-field:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05), 0 0 0 2px rgba(106, 13, 173, 0.2); /* Purple focus ring */
+}
+
+.send-btn {
+    background-color: var(--send-btn-bg); /* Purple send button */
+    color: var(--send-btn-icon);
+    padding: 0.75rem; /* Adjusted for icon size */
+    width: 3rem; /* Fixed width for circular button */
+    height: 3rem; /* Fixed height for circular button */
+    border-radius: 50%; /* Circular button */
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex; /* To center the icon */
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for button */
+}
+
+.send-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.send-btn:active {
+    transform: translateY(0);
+}
+.upload-btn { /* NEW: Styling for the upload button */
+    background-color: var(--card-bg); /* White background */
+    color: var(--text-color); /* Dark text */
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: background-color 0.2s, transform 0.1s, border-color 0.2s;
+}
+
+.upload-btn:hover {
+    background-color: var(--bg-light); /* Lighter on hover */
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.disclaimer-text {
+    font-size: 0.75rem; /* Smaller font size */
+    color: var(--disclaimer-text-color); /* Lighter grey */
+    text-align: center;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+
+/* Side Menu (Slide-in from right) */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -250px;
+    width: auto; /* Changed from 250px to auto to fit content */
+    max-width: 250px; /* Ensure it doesn't get too wide */
+    height: auto; /* Changed from 100% to auto to fit content */
+    min-height: 100vh; /* Keep min-height 100vh to cover full screen when needed, but content determines max height */
+    background-color: var(--bg-dark); /* Dark background */
+    color: var(--text-light);
+    box-shadow: -4px 0 15px var(--shadow-color);
+    padding-top: 60px;
+    transition: right 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+}
+
+.side-menu.open {
+    right: 0;
+}
+
+.close-menu-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2.5rem; /* Adjusted size to look more balanced */
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 5px;
+    z-index: 25;
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.menu-item {
+    padding: 1rem 1.5rem;
+    color: var(--text-light);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    transition: background-color 0.2s ease, color 0.3s ease, border-color 0.3s ease;
+    font-size: 1.15rem;
+    font-weight: 500;
+    text-align: left;
+    margin-bottom: 0;
+    display: flex; /* Enable flex for icon alignment */
+    align-items: center;
+    gap: 1rem; /* Space between icon and text */
+}
+
+.menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+/* Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 15;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Container */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 25;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.9);
+
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.modal-container.open {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.modal-content {
+    background-color: var(--card-bg); /* White background */
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--shadow-color);
+    padding: 2.5rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh; /* Limits the height of modals */
+    overflow-y: auto; /* Enables scrolling for modal content */
+    position: relative;
+    color: var(--text-color);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+.modal-content .modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2.5rem; /* Adjusted size */
+    cursor: pointer;
+    color: #6b7280; /* Darker grey for X */
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.modal-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color); /* Purple text */
+    text-align: center;
+    /* Removed background-color, padding, border-radius, box-shadow for a cleaner look as per screenshots */
+    margin-top: 0; /* No pull up */
+    margin-left: 0; /* No extend */
+    margin-right: 0; /* No extend */
+    transition: color 0.3s ease;
+}
+
+.modal-content .modal-icon { /* For icons at the top of modals (User Profile, About, Login Required) */
+    width: 4rem;
+    height: 4rem;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -4rem auto 1rem; /* Pull up to overlap, center */
+    font-size: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.modal-content .text-center { /* For "Login Required" and "About" descriptive text */
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+/* Login Required Modal Specific */
+.login-required-disclaimer {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+.login-required-social-options {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+.social-icon-btn {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    color: #4b5563;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.social-icon-btn:hover {
+    background-color: #e5e7eb;
+    color: var(--primary-color);
+}
+.or-separator {
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+    position: relative;
+}
+.or-separator::before, .or-separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: var(--border-color);
+}
+.or-separator::before { left: 0; }
+.or-separator::after { right: 0; }
+
+
+.modal-content p {
+    margin-bottom: 1rem;
+}
+
+/* Settings Page Specific Styles */
+.settings-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
+}
+
+.settings-option:last-child {
+    border-bottom: none;
+}
+
+.settings-option label {
+    font-weight: bold;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.settings-dropdown { /* For Theme, Language, Font Size dropdowns */
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+}
+.settings-dropdown:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(106, 13, 173, 0.2);
+}
+
+
+/* Toggle Switch Styles (for Theme) */
+.toggle-switch-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch-checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch-label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-switch-checkbox:checked + .toggle-switch-label {
+    background-color: var(--primary-color);
+}
+
+.toggle-switch-checkbox:focus + .toggle-switch-label {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+.toggle-switch-label:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.toggle-switch-checkbox:checked + .toggle-switch-label:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* No transform or max-width changes for app-wrapper when menu/modal is active */
+body.menu-active .app-wrapper,
+body.modal-open .app-wrapper {
+    transform: translateX(0); /* Ensure it does not move */
+    /* Maintain the max-width and margin from desktop, no change needed here */
+}
+
+/* Responsive Adjustments for smaller screens */
+@media (max-width: 768px) {
+    html, body {
+        overflow: hidden;
+    }
+    .app-wrapper {
+        border-radius: 0;
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .content-area {
+        flex-grow: 1;
+        height: calc(100vh - var(--header-height));
+        padding: 0;
+    }
+
+    .chat-section {
+        height: calc(100% - var(--actual-chat-input-height));
+        width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .auth-section {
+        padding: 1.5rem;
+        border-radius: 0;
+        height: 100%;
+        /* These properties are now handled by the main .auth-section block */
+        /* max-height: 90vh; */
+        /* overflow-y: auto; */
+        /* -webkit-overflow-scrolling: touch; */
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .menu-btn {
+        padding: 0.5rem 0.75rem; /* Adjust padding for mobile menu button */
+    }
+
+    .new-chat-btn {
+        padding: 0.5rem 1rem; /* Adjust padding for mobile new chat button */
+    }
+
+    .side-menu {
+        width: auto; /* Adjusted to auto on mobile too */
+        max-width: 250px;
+        height: auto; /* Adjusted to auto on mobile too */
+        min-height: 100vh; /* Keep min-height to ensure it can cover full screen if content grows that tall */
+        border-radius: 0;
+        padding-top: 60px;
+        right: -80%;
+    }
+
+    .side-menu.open {
+        right: 0;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: unset;
+        max-height: 95vh;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    .modal-content h2 {
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        padding: 0;
+    }
+    .modal-content .modal-icon { /* Adjust modal icon position for mobile */
+        margin: -3rem auto 1rem; /* Slightly less pull up */
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.8rem;
+    }
+
+    .chat-box .message {
+        font-size: 0.9rem;
+    }
+}
