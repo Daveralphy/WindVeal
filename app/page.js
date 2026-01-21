@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { evaluate } from 'mathjs';
-import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, MoreVertical, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2 } from 'lucide-react';
+import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, MoreVertical, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info } from 'lucide-react';
 import intents from '../data/intents.json';
 import AuthModal from '../components/AuthModal';
 import Settings from '../components/Settings';
@@ -24,8 +24,11 @@ export default function Home() {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const [fontSize, setFontSize] = useState('medium');
+  const [notifications, setNotifications] = useState(true);
+  const [sound, setSound] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [openModelMenu, setOpenModelMenu] = useState(null);
   const [currentModel, setCurrentModel] = useState('gemini');
@@ -62,6 +65,10 @@ export default function Home() {
     setTheme(savedTheme);
     const savedSize = localStorage.getItem('fontSize') || 'medium';
     setFontSize(savedSize);
+    const savedNotifications = localStorage.getItem('notifications');
+    if (savedNotifications !== null) setNotifications(savedNotifications === 'true');
+    const savedSound = localStorage.getItem('sound');
+    if (savedSound !== null) setSound(savedSound === 'true');
   }, []);
 
   // Apply theme
@@ -78,6 +85,14 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
+
+  useEffect(() => {
+    localStorage.setItem('notifications', notifications);
+  }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem('sound', sound);
+  }, [sound]);
 
   const getFontSizeClass = () => {
     switch(fontSize) {
@@ -458,30 +473,64 @@ export default function Home() {
 
               {/* Notifications */}
               <div className="overflow-hidden rounded-lg transition-all">
-                <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium transition-colors opacity-60 cursor-not-allowed">
+                <button 
+                  onClick={() => toggleSetting('notifications')}
+                  className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <Bell size={20} /> <span>Notifications</span>
                   </div>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={16} className={`transition-transform duration-200 ${activeSetting === 'notifications' ? 'rotate-180' : ''}`} />
                 </button>
+                
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeSetting === 'notifications' ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                  <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg p-3 mx-4 mb-2">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Enable Notifications</span>
+                    <button onClick={() => setNotifications(!notifications)} className={`w-10 h-5 rounded-full transition-colors relative ${notifications ? 'bg-primary' : 'bg-gray-400'}`}>
+                      <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${notifications ? 'left-6' : 'left-1'}`} />
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Sound */}
               <div className="overflow-hidden rounded-lg transition-all">
-                <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium transition-colors opacity-60 cursor-not-allowed">
+                <button 
+                  onClick={() => toggleSetting('sound')}
+                  className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <Volume2 size={20} /> <span>Sound</span>
                   </div>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={16} className={`transition-transform duration-200 ${activeSetting === 'sound' ? 'rotate-180' : ''}`} />
                 </button>
+                
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeSetting === 'sound' ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                  <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg p-3 mx-4 mb-2">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Enable Sound Effects</span>
+                    <button onClick={() => setSound(!sound)} className={`w-10 h-5 rounded-full transition-colors relative ${sound ? 'bg-primary' : 'bg-gray-400'}`}>
+                      <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${sound ? 'left-6' : 'left-1'}`} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Contact Support */}
           <div>
-            <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
+            <a 
+              href="mailto:support@windveal.com"
+              className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
+            >
               <HelpCircle size={20} /> Contact Support
+            </a>
+          </div>
+
+          {/* About */}
+          <div>
+            <button onClick={() => setIsAboutModalOpen(true)} className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
+              <Info size={20} /> About
             </button>
           </div>
 
@@ -503,6 +552,13 @@ export default function Home() {
                     {getHistorySummary()}
                   </div>
                 )}
+                <button 
+                  onClick={handleDeleteHistory}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                >
+                  <Trash2 size={18} />
+                  <span>Clear Chat</span>
+                </button>
               </div>
             </div>
           )}
@@ -660,7 +716,7 @@ export default function Home() {
         </div>
       </div>
 
-      <form onSubmit={handleSend} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2 transition-colors duration-200">
+      <form onSubmit={handleSend} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2 transition-colors duration-200">
         <div className="w-full max-w-3xl mx-auto flex gap-2 items-end relative">
           <div className="flex-1 flex flex-col gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-700 relative transition-all">
             
@@ -736,6 +792,9 @@ export default function Home() {
             </button>
           )}
         </div>
+        <div className="text-center">
+          <p className="text-xs text-gray-400 dark:text-gray-500">WindVeal may give answers that are wrong, so confirm from trusted sources</p>
+        </div>
         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
       </form>
 
@@ -753,6 +812,42 @@ export default function Home() {
         fontSize={fontSize}
         setFontSize={setFontSize}
       />
+
+      {/* About Modal */}
+      {isAboutModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setIsAboutModalOpen(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setIsAboutModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="flex flex-col items-center text-center mb-6">
+              <img src="/images/logo.png" alt="WindVeal Logo" className="w-20 h-20 object-contain mb-4" />
+              <h2 className="text-2xl font-bold text-primary dark:text-white">WindVeal</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Version 2.0.0</p>
+            </div>
+            
+            <div className="space-y-4 text-gray-700 dark:text-gray-300 text-center">
+              <p>
+                WindVeal is a hybrid AI assistant designed to provide fast, accurate, and helpful responses. 
+                It combines a local brain for quick tasks with a powerful cloud brain for complex reasoning.
+              </p>
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500">
+                  © {new Date().getFullYear()} WindVeal AI. All rights reserved.
+                </p>
+                <div className="mt-2 flex justify-center gap-4">
+                  <a href="#" className="text-xs text-primary hover:underline">Terms of Service</a>
+                  <a href="#" className="text-xs text-primary hover:underline">Privacy Policy</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
