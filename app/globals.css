@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #6a0dad;
+    --color-primary-dark: #5a099a;
+  }
+
+  * {
+    @apply transition-colors;
+  }
+}
+
+@layer components {
+  .bg-primary {
+    @apply bg-[#6a0dad];
+  }
+
+  .bg-primary-dark {
+    @apply bg-[#5a099a];
+  }
+
+  .text-primary {
+    @apply text-[#6a0mad];
+  }
+
+  .hover\:bg-primary-dark:hover {
+    @apply bg-[#5a099a];
+  }
+}
+
+@keyframes typing {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-typing {
+  animation: typing 1s infinite ease-in-out;
+}

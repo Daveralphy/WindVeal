@@ -1,0 +1,47 @@
+﻿import { NextResponse } from 'next/server';
+import pool from '../../../lib/db';
+import crypto from 'crypto';
+
+export async function POST(req) {
+  try {
+    const { username, email, password } = await req.json();
+
+    if (!username || !email || !password) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    await pool.query(\
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    \);
+
+    const existingUser = await pool.query(
+      'SELECT * FROM users WHERE username = \ OR email = \',
+      [username, email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return NextResponse.json({ error: 'User already exists' }, { status: 409 });
+    }
+
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+    const passwordHash = \\:\\;
+
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password_hash) VALUES (\, \, \) RETURNING id, username, email',
+      [username, email, passwordHash]
+    );
+
+    const user = result.rows[0];
+    return NextResponse.json({ user }, { status: 201 });
+  } catch (error) {
+    console.error('Registration error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

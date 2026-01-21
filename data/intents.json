@@ -1,7 +1,7 @@
 [
   {
     "tag": "identity",
-    "patterns": ["who are you", "what are you", "introduce yourself"],
+    "patterns": ["who are you", "what are you", "introduce yourself", "what is your name", "what's your name", "what can i call you", "your name"],
     "response": "I am WindVeal, a hybrid AI assistant. I have a local brain for fast answers and a cloud brain for complex thinking."
   },
   {
@@ -11,7 +11,7 @@
   },
   {
     "tag": "capabilities",
-    "patterns": ["what can you do", "help me", "features"],
+    "patterns": ["what can you do", "help me", "features", "what do you do", "do you do"],
     "response": "I can answer questions, help with creative writing, solve problems, and chat about various topics. Try asking me '1+1' or 'what is a noun'!"
   },
   {
