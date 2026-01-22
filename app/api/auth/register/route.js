@@ -10,7 +10,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    await pool.query(\
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
@@ -18,10 +18,10 @@ export async function POST(req) {
         password_hash TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    \);
+    `);
 
     const existingUser = await pool.query(
-      'SELECT * FROM users WHERE username = \ OR email = \',
+      'SELECT * FROM users WHERE username = $1 OR email = $2',
       [username, email]
     );
 
@@ -31,10 +31,10 @@ export async function POST(req) {
 
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-    const passwordHash = \\:\\;
+    const passwordHash = `${salt}:${hash}`;
 
     const result = await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES (\, \, \) RETURNING id, username, email',
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email',
       [username, email, passwordHash]
     );
 
