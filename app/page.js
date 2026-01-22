@@ -1,19 +1,20 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { evaluate } from 'mathjs';
-import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, MoreVertical, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info } from 'lucide-react';
-import intents from '../data/intents.json';
+import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, MoreVertical, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info, Send, PanelLeft, CreditCard, Sliders, Upload } from 'lucide-react';
+import intents from '@/data/intents.json';
+import suggestions from '@/app/suggestions.json';
 import AuthModal from '../components/AuthModal';
 import Settings from '../components/Settings';
 
 export default function Home() {
-  const [messages, setMessages] = useState([
-    { role: 'bot', content: 'Hello! I am WindVeal. How can I help you today?', feedback: null }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSetting, setActiveSetting] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
@@ -21,17 +22,18 @@ export default function Home() {
   const textareaRef = useRef(null);
   const fileMenuRef = useRef(null);
   const abortControllerRef = useRef(null);
+  const recognitionRef = useRef(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const [fontSize, setFontSize] = useState('medium');
-  const [notifications, setNotifications] = useState(true);
-  const [sound, setSound] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [openModelMenu, setOpenModelMenu] = useState(null);
   const [currentModel, setCurrentModel] = useState('gemini');
+  const [isHeaderModelMenuOpen, setIsHeaderModelMenuOpen] = useState(false);
+  const [shuffledSuggestions, setShuffledSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -41,6 +43,11 @@ export default function Home() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    const shuffled = [...suggestions].sort(() => 0.5 - Math.random());
+    setShuffledSuggestions(shuffled);
+  }, []);
 
   // Handle click outside for menus
   useEffect(() => {
@@ -54,10 +61,16 @@ export default function Home() {
       if (isShareOpen && !event.target.closest('.share-menu-container')) {
         setIsShareOpen(false);
       }
+      if (isProfileOpen && !event.target.closest('.profile-menu-container')) {
+        setIsProfileOpen(false);
+      }
+      if (isHeaderModelMenuOpen && !event.target.closest('.header-model-menu-container')) {
+        setIsHeaderModelMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openModelMenu]);
+  }, [openModelMenu, isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen]);
 
   // Load settings from local storage on mount
   useEffect(() => {
@@ -65,10 +78,6 @@ export default function Home() {
     setTheme(savedTheme);
     const savedSize = localStorage.getItem('fontSize') || 'medium';
     setFontSize(savedSize);
-    const savedNotifications = localStorage.getItem('notifications');
-    if (savedNotifications !== null) setNotifications(savedNotifications === 'true');
-    const savedSound = localStorage.getItem('sound');
-    if (savedSound !== null) setSound(savedSound === 'true');
   }, []);
 
   // Apply theme
@@ -86,19 +95,11 @@ export default function Home() {
     localStorage.setItem('fontSize', fontSize);
   }, [fontSize]);
 
-  useEffect(() => {
-    localStorage.setItem('notifications', notifications);
-  }, [notifications]);
-
-  useEffect(() => {
-    localStorage.setItem('sound', sound);
-  }, [sound]);
-
   const getFontSizeClass = () => {
     switch(fontSize) {
-      case 'small': return 'text-sm';
-      case 'large': return 'text-lg';
-      default: return 'text-base';
+      case 'small': return 'text-xs md:text-sm';
+      case 'large': return 'text-base md:text-lg';
+      default: return 'text-sm md:text-base';
     }
   };
 
@@ -124,11 +125,11 @@ export default function Home() {
       if (data.history && data.history.length > 0) {
         setMessages(data.history.map(m => ({ ...m, feedback: m.feedback || null })));
       } else {
-        setMessages(prev => [...prev, { role: 'bot', content: `Welcome back, ${user.username}!`, feedback: null }]);
+        setMessages([]);
       }
     } catch (error) {
       console.error("Error loading history:", error);
-      setMessages(prev => [...prev, { role: 'bot', content: `Welcome back, ${user.username}!`, feedback: null }]);
+      setMessages([]);
     }
   };
 
@@ -154,9 +155,7 @@ export default function Home() {
       }
     }
 
-    setMessages([
-      { role: 'bot', content: 'Hello! I am WindVeal. How can I help you today?', feedback: null }
-    ]);
+    setMessages([]);
     setIsSidebarOpen(false);
     setActiveSetting(null);
   };
@@ -234,6 +233,67 @@ export default function Home() {
     setMessages(prev => [...prev, { role: 'bot', content: 'Response cancelled.', feedback: null }]);
   };
 
+  const playRecordingSound = (isStart) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      const frequency = isStart ? 600 : 400;
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {
+      console.error("Audio play failed", e);
+    }
+  };
+
+  const handleMicClick = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        playRecordingSound(true);
+      };
+      recognition.onend = () => {
+        setIsRecording(false);
+        playRecordingSound(false);
+      };
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setIsRecording(false);
+      };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(prev => prev + (prev ? ' ' : '') + transcript);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } else {
+      alert("Speech recognition is not supported in this browser.");
+    }
+  };
+
   const handleShare = (platform) => {
     const url = encodeURIComponent(window.location.href);
     const text = encodeURIComponent("Check out WindVeal AI Assistant!");
@@ -272,21 +332,22 @@ export default function Home() {
       });
 
       // Small delay for typing effect (faster for whitespace)
-      const delay = words[i].trim() === '' ? 5 : 30;
+      const delay = words[i].trim() === '' ? 20 : 60;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   };
 
-  const handleSend = async (e) => {
+  const handleSend = async (e, textOverride) => {
     e?.preventDefault();
-    if (!input.trim()) return;
+    const text = typeof textOverride === 'string' ? textOverride : input;
+    if (!text.trim()) return;
 
     if (messages.length >= 100) {
       alert("You have reached the 100 message limit. Please start a new chat.");
       return;
     }
 
-    const userMsg = { role: 'user', content: input };
+    const userMsg = { role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setSelectedFile(null);
@@ -325,6 +386,15 @@ export default function Home() {
       }
     }
 
+    // Check suggestions.json for a match
+    if (!localResponse) {
+      const suggestionMatch = suggestions.find(s => s.prompt.toLowerCase() === lowerInput);
+      if (suggestionMatch) {
+        const responses = suggestionMatch.responses;
+        localResponse = responses[Math.floor(Math.random() * responses.length)];
+      }
+    }
+
     if (localResponse) {
       await animateResponse(localResponse);
       setIsTyping(false);
@@ -342,7 +412,7 @@ export default function Home() {
         body: JSON.stringify({ 
           message: userMsg.content,
           history: messages 
-        }),
+        , model: currentModel }),
         signal: abortControllerRef.current.signal
       });
 
@@ -394,14 +464,13 @@ export default function Home() {
       )}
 
       {/* Sidebar Menu */}
-      <div className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-800 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed top-0 left-0 w-64 md:w-72 bg-white dark:bg-gray-800 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} h-auto max-h-[90vh] md:h-full md:max-h-full rounded-b-2xl md:rounded-none overflow-hidden`}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <img src="/images/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-xl text-primary dark:text-white">WindVeal</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-            <X size={24} />
+            <PanelLeft size={24} />
           </button>
         </div>
 
@@ -470,50 +539,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
-              {/* Notifications */}
-              <div className="overflow-hidden rounded-lg transition-all">
-                <button 
-                  onClick={() => toggleSetting('notifications')}
-                  className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Bell size={20} /> <span>Notifications</span>
-                  </div>
-                  <ChevronDown size={16} className={`transition-transform duration-200 ${activeSetting === 'notifications' ? 'rotate-180' : ''}`} />
-                </button>
-                
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeSetting === 'notifications' ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-                  <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg p-3 mx-4 mb-2">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Enable Notifications</span>
-                    <button onClick={() => setNotifications(!notifications)} className={`w-10 h-5 rounded-full transition-colors relative ${notifications ? 'bg-primary' : 'bg-gray-400'}`}>
-                      <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${notifications ? 'left-6' : 'left-1'}`} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sound */}
-              <div className="overflow-hidden rounded-lg transition-all">
-                <button 
-                  onClick={() => toggleSetting('sound')}
-                  className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 font-medium transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Volume2 size={20} /> <span>Sound</span>
-                  </div>
-                  <ChevronDown size={16} className={`transition-transform duration-200 ${activeSetting === 'sound' ? 'rotate-180' : ''}`} />
-                </button>
-                
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeSetting === 'sound' ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-                  <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg p-3 mx-4 mb-2">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Enable Sound Effects</span>
-                    <button onClick={() => setSound(!sound)} className={`w-10 h-5 rounded-full transition-colors relative ${sound ? 'bg-primary' : 'bg-gray-400'}`}>
-                      <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${sound ? 'left-6' : 'left-1'}`} />
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -566,7 +591,14 @@ export default function Home() {
 
         {/* Bottom User Section */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-          <div className="flex items-center gap-3">
+          {/* Mobile Footer: Logo & Version */}
+          <div className="md:hidden flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
+            <img src="/images/logo.png" alt="Logo" className="w-6 h-6 object-contain opacity-70" />
+            <span className="text-sm font-medium">WindVeal V2.0</span>
+          </div>
+
+          {/* Desktop Footer: User Info */}
+          <div className="hidden md:flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                {currentUser ? (
                  <UserCircle size={32} className="text-gray-500 dark:text-gray-400" />
@@ -591,70 +623,206 @@ export default function Home() {
         </div>
       </div>
 
-      <header className="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center z-10 transition-colors duration-200">
-        <div className="flex items-center gap-3">
-          {/* Logo / Hamburger Toggle */}
-          <div 
-            className="relative w-10 h-10 cursor-pointer group z-20"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            {/* Logo Image (Visible by default, hidden on hover) */}
-            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100 group-hover:opacity-0">
-               <img src="/images/logo.png" alt="Logo" className="w-full h-full object-contain" />
+      <header className="bg-gray-50 dark:bg-gray-900 z-10 transition-colors duration-200 relative shadow-sm md:shadow-none">
+        
+        {/* Mobile Header Layout (Single Row) */}
+        <div className="md:hidden flex w-full justify-between items-center p-3">
+          <div className="flex items-center gap-3">
+            {/* Menu Drawer */}
+            <button 
+              className="text-primary dark:text-white"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <PanelLeft size={24} />
+            </button>
+            {/* Title after Menu */}
+            <div className="relative header-model-menu-container">
+              <button 
+                onClick={() => setIsHeaderModelMenuOpen(!isHeaderModelMenuOpen)}
+                className="flex items-center gap-1 text-lg font-bold text-primary dark:text-white"
+              >
+                WindVeal <ChevronDown size={16} />
+              </button>
+              {isHeaderModelMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                  <div className="p-2 space-y-1">
+                    {['windveal', 'gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
+                      <button key={model} onClick={() => { handleModelChange(model); setIsHeaderModelMenuOpen(false); }} className="w-full text-left flex justify-between items-center px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors">
+                        <span className="capitalize">{model}</span>
+                        {currentModel === model && <Check size={16} className="text-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Hamburger Icon (Hidden by default, visible on hover) */}
-            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 group-hover:opacity-100 text-primary dark:text-white">
-              <Menu size={32} />
+          </div>
+
+          <div className="flex items-center gap-3 relative share-menu-container">
+            {/* Share Button (Mobile) */}
+            <button 
+              onClick={() => setIsShareOpen(!isShareOpen)}
+              className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors"
+              title="Share"
+            >
+              <Upload size={20} />
+            </button>
+
+            {isShareOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                <div className="p-2 space-y-1">
+                  <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Facebook size={18} className="text-blue-600" /> Facebook
+                  </button>
+                  <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <MessageCircle size={18} className="text-green-500" /> WhatsApp
+                  </button>
+                  <button onClick={() => handleShare('twitter')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Twitter size={18} className="text-sky-500" /> Twitter
+                  </button>
+                  <button onClick={() => handleShare('linkedin')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Linkedin size={18} className="text-blue-700" /> LinkedIn
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Right: Profile Avatar */}
+            <div className="relative profile-menu-container z-20">
+              <button 
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-300 dark:border-gray-600"
+              >
+                {currentUser ? (
+                   <UserCircle size={24} className="text-gray-500 dark:text-gray-400" />
+                 ) : (
+                   <UserCircle size={24} className="text-gray-400 dark:text-gray-500" />
+                 )}
+              </button>
+
+              {/* Mobile Profile Dropdown */}
+              {isProfileOpen && (
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                  <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                    <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{currentUser ? currentUser.username : 'Guest'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Free Tier</p>
+                  </div>
+                  
+                  <div className="p-1">
+                    <button className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors text-left">
+                      <CreditCard size={14} />
+                      Subscription
+                    </button>
+                    <button className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors text-left">
+                      <Sliders size={14} />
+                      Personalization
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        
-        {/* Right side actions */}
-        <div className="flex items-center gap-4 relative share-menu-container">
-          <h1 className="text-xl font-bold text-primary dark:text-white">WindVeal</h1>
-          <button 
-            onClick={() => setIsShareOpen(!isShareOpen)}
-            className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors"
-            title="Share"
-          >
-            <Share2 size={24} />
-          </button>
 
-          {/* Share Modal/Dropdown */}
-          {isShareOpen && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
-              <div className="p-2 space-y-1">
-                <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                  <Facebook size={18} className="text-blue-600" /> Facebook
-                </button>
-                <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                  <MessageCircle size={18} className="text-green-500" /> WhatsApp
-                </button>
-                <button onClick={() => handleShare('twitter')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                  <Twitter size={18} className="text-sky-500" /> Twitter
-                </button>
-                <button onClick={() => handleShare('linkedin')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                  <Linkedin size={18} className="text-blue-700" /> LinkedIn
-                </button>
+        {/* Desktop Header Layout (Hidden on mobile) */}
+        <div className="hidden md:flex justify-between items-center p-4 h-auto">
+          <div className="flex items-center gap-3 z-20">
+            <div 
+              className="relative w-12 h-12 cursor-pointer group z-20 flex-shrink-0"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100 group-hover:opacity-0">
+                 <img src="/images/logo.png" alt="Logo" className="w-full h-full object-contain" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 group-hover:opacity-100 text-primary dark:text-white">
+                <Menu size={32} />
               </div>
             </div>
-          )}
+
+            {/* Title/Model Selector (Desktop) */}
+            <div className="relative header-model-menu-container">
+              <button 
+                onClick={() => setIsHeaderModelMenuOpen(!isHeaderModelMenuOpen)}
+                className="flex items-center gap-1 text-xl font-bold text-primary dark:text-white hover:opacity-80 transition-opacity"
+              >
+                WindVeal <ChevronDown size={20} />
+              </button>
+              {isHeaderModelMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                  <div className="p-2 space-y-1">
+                    {['windveal', 'gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
+                      <button key={model} onClick={() => { handleModelChange(model); setIsHeaderModelMenuOpen(false); }} className="w-full text-left flex justify-between items-center px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors">
+                        <span className="capitalize">{model}</span>
+                        {currentModel === model && <Check size={16} className="text-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 relative share-menu-container">
+            <button 
+              onClick={() => setIsShareOpen(!isShareOpen)}
+              className="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+              title="Share"
+            >
+              <Upload size={24} />
+            </button>
+
+            {isShareOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                <div className="p-2 space-y-1">
+                  <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Facebook size={18} className="text-blue-600" /> Facebook
+                  </button>
+                  <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <MessageCircle size={18} className="text-green-500" /> WhatsApp
+                  </button>
+                  <button onClick={() => handleShare('twitter')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Twitter size={18} className="text-sky-500" /> Twitter
+                  </button>
+                  <button onClick={() => handleShare('linkedin')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Linkedin size={18} className="text-blue-700" /> LinkedIn
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-3xl mx-auto">
-          <div className="space-y-8">
-            {messages.map((msg, idx) => (
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[60vh] opacity-80 animate-in fade-in zoom-in duration-500">
+              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                <img src="/images/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
+              </div>
+              <h2 className="text-2xl font-bold text-primary dark:text-white mb-2">WindVeal</h2>
+              <p className="text-gray-500 dark:text-gray-400">How can I help you today?</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-md mt-8 px-4">
+                {shuffledSuggestions.map((s, i) => (
+                  <button key={i} onClick={() => setInput(s.prompt)} className="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left shadow-sm">
+                    {s.prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {messages.map((msg, idx) => (
               msg.role === 'user' ? (
                 <div key={idx} className="flex justify-end">
-                  <div className="max-w-[80%] p-3 rounded-lg bg-primary text-white rounded-br-none shadow-md">
+                  <div className="max-w-[85%] md:max-w-[80%] p-2 md:p-3 rounded-lg bg-primary text-white rounded-br-none shadow-md">
                     {msg.content}
                   </div>
                 </div>
               ) : (
                 <div key={idx} className="flex justify-start">
-                  <div className="max-w-[80%] flex flex-col items-start gap-2">
+                  <div className="max-w-[90%] md:max-w-[80%] flex flex-col items-start gap-2">
                     <div className="text-gray-800 dark:text-gray-100 text-left">
                       {msg.content}
                     </div>
@@ -681,7 +849,7 @@ export default function Home() {
                           <div className={`absolute ${idx < 2 ? 'top-full mt-2' : 'bottom-full mb-2'} w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10 p-2`}>
                             <p className="text-xs text-gray-400 px-2 pb-1">MODELS</p>
                             <ul>
-                              {['gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
+                              {['windveal', 'gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
                                 <li key={model}>
                                   <button 
                                     onClick={() => handleModelChange(model)}
@@ -701,7 +869,8 @@ export default function Home() {
                 </div>
               )
             ))}
-          </div>
+            </div>
+          )}
           
           {isTyping && (
             <div className="flex justify-start mt-4">
@@ -716,9 +885,9 @@ export default function Home() {
         </div>
       </div>
 
-      <form onSubmit={handleSend} className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2 transition-colors duration-200">
+      <form onSubmit={handleSend} className="p-1 md:p-4 bg-gray-50 dark:bg-gray-900 flex flex-col gap-2 transition-colors duration-200">
         <div className="w-full max-w-3xl mx-auto flex gap-2 items-end relative">
-          <div className="flex-1 flex flex-col gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-700 relative transition-all">
+          <div className="flex-1 min-w-0 flex flex-col gap-2 p-1 md:p-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-700 relative transition-all pr-2">
             
             {/* File Preview */}
             {selectedFile && (
@@ -742,11 +911,11 @@ export default function Home() {
 
             <div className="flex items-end gap-2 w-full">
               {/* Plus Button & File Menu */}
-              <div className="relative pb-1" ref={fileMenuRef}>
+              <div className="relative" ref={fileMenuRef}>
                 <button 
                   type="button" 
                   onClick={() => setIsFileMenuOpen(!isFileMenuOpen)} 
-                  className="p-2 text-gray-400 hover:text-primary transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="p-1.5 md:p-3 text-gray-400 hover:text-primary transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 w-8 h-8 md:w-12 md:h-12 flex items-center justify-center"
                 >
                   <Plus size={20} />
                 </button>
@@ -773,27 +942,28 @@ export default function Home() {
                 onKeyDown={handleKeyDown}
                 placeholder="Message WindVeal..."
                 rows={1}
-                className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-2 py-2 resize-none max-h-48 overflow-y-auto"
+                className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-2 py-2 md:py-3 resize-none max-h-48 overflow-y-auto text-xs md:text-base"
               />
+
+              {/* Send/Mic Button Inside Input */}
+              {isTyping ? (
+                <button type="button" onClick={handleStop} className="bg-gray-800 dark:bg-white text-white dark:text-gray-900 p-1.5 md:p-3 rounded-full w-8 h-8 md:w-12 md:h-12 flex items-center justify-center hover:opacity-80 transition shadow-sm shrink-0">
+                  <Square size={20} fill="currentColor" />
+                </button>
+              ) : (
+                <button 
+                  type={input.trim() ? "submit" : "button"} 
+                  onClick={input.trim() ? undefined : handleMicClick}
+                  className={`${input.trim() ? 'bg-primary text-white hover:bg-primary-dark' : isRecording ? 'bg-red-500 text-white hover:bg-red-600 animate-recording' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'} p-1.5 md:p-3 rounded-full w-8 h-8 md:w-12 md:h-12 flex items-center justify-center transition shadow-sm shrink-0`}
+                >
+                  {input.trim() ? <Send size={20} /> : <Mic size={20} />}
+                </button>
+              )}
             </div>
           </div>
-          
-          <button type="button" className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 p-3 rounded-full w-12 h-12 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-md shrink-0 mb-1">
-            <Mic size={20} />
-          </button>
-          
-          {isTyping ? (
-            <button type="button" onClick={handleStop} className="bg-gray-800 dark:bg-white text-white dark:text-gray-900 p-3 rounded-full w-12 h-12 flex items-center justify-center hover:opacity-80 transition shadow-md shrink-0 mb-1">
-              <Square size={20} fill="currentColor" />
-            </button>
-          ) : (
-            <button type="submit" className="bg-primary text-white p-3 rounded-full w-12 h-12 flex items-center justify-center hover:bg-primary-dark transition shadow-md shrink-0 mb-1">
-              <span>&uarr;</span>
-            </button>
-          )}
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-400 dark:text-gray-500">WindVeal may give answers that are wrong, so confirm from trusted sources</p>
+          <p className="text-[9px] md:text-xs text-gray-400 dark:text-gray-500 px-2">WindVeal may give answers that are wrong, so confirm from trusted sources</p>
         </div>
         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
       </form>

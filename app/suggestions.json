@@ -1,0 +1,34 @@
+[
+  {
+    "prompt": "What is WindVeal?",
+    "responses": [
+      "I am WindVeal, a hybrid AI assistant. I combine local processing for speed with cloud capabilities for complex tasks.",
+      "WindVeal is your AI companion! I have a local brain for quick chats and a cloud brain for deep thinking.",
+      "I'm WindVeal, designed to be fast and helpful. I run partly on your device and partly in the cloud."
+    ]
+  },
+  {
+    "prompt": "Write a short story about a robot",
+    "responses": [
+      "Once upon a time, a robot named Bolt discovered he loved gardening. He swapped his laser for a watering can and grew the biggest sunflowers in the city.",
+      "In a world of steel, Unit 734 found a flower. It protected the flower from the rain, learning that even machines can care for life.",
+      "The little robot wanted to fly. It built wings from scrap metal and jumped off the garage. It didn't fly, but it fell with style!"
+    ]
+  },
+  {
+    "prompt": "Explain quantum physics simply",
+    "responses": [
+      "Quantum physics is the study of very small things, like atoms. At that scale, things can be in two places at once until you look at them!",
+      "Imagine a coin spinning. Is it heads or tails? In quantum physics, it's both at the same time until it stops. That's called superposition.",
+      "It's the rules for how the universe works at the tiniest level. Unlike our big world, tiny particles can teleport and be connected across vast distances."
+    ]
+  },
+  {
+    "prompt": "Give me a healthy dinner recipe",
+    "responses": [
+      "How about Grilled Salmon with Asparagus? Season salmon with lemon and herbs, grill for 10 mins, and serve with steamed asparagus.",
+      "Try a Quinoa Salad! Mix cooked quinoa with cucumber, cherry tomatoes, feta cheese, and a lemon-olive oil dressing.",
+      "Chicken Stir-Fry is great. Sauté chicken breast with broccoli, bell peppers, and snap peas in a light soy and ginger sauce."
+    ]
+  }
+]
