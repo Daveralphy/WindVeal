@@ -1,6 +1,6 @@
 # WindVeal: AI Assistant
 
-WindVeal (formerly Dave Chatbot) is a modern AI assistant built with **Next.js** and deployed on **Vercel**. It features a unique "Hybrid Intelligence" system that handles simple queries locally in the browser for instant responses, while leveraging **HuggingFace's Mistral-7B** model for complex reasoning and creative tasks.
+WindVeal (formerly Dave Chatbot) is a modern AI assistant built with **Next.js** and deployed on **Vercel**. It features a unique "Hybrid Intelligence" system that handles simple queries locally in the browser for instant responses, while leveraging **HuggingFace's Zephyr-7B** model for complex reasoning and creative tasks.
 
 ---
 
@@ -33,7 +33,7 @@ WindVeal/
 │   │   ├── auth/
 │   │   │   ├── login/route.js       # Login endpoint
 │   │   │   └── register/route.js    # Registration endpoint
-│   │   ├── chat/route.js            # Chat API (HuggingFace Mistral integration)
+│   │   ├── chat/route.js            # Chat API (HuggingFace Zephyr integration)
 │   │   └── history/route.js         # Chat history storage
 │   ├── lib/
 │   │   └── db.js                    # Database connection pool
@@ -86,8 +86,8 @@ WindVeal/
 3. **Configure Environment Variables:**
    Create a `.env.local` file in the root directory:
    ```env
-   HUGGINGFACE_API_KEY="your_huggingface_token_here"
-   POSTGRES_URL_NON_POOLING="your_supabase_connection_string"
+   HF_TOKEN=your_huggingface_token_here
+   POSTGRES_URL_NON_POOLING=your_supabase_connection_string
    ```
 
 4. **Run Locally:**
@@ -118,7 +118,7 @@ Edit `data/persona.json` to change how the AI behaves during complex conversatio
 2. Go to Vercel.com and click **"Add New Project"**.
 3. Import your WindVeal repository.
 4. In the **Environment Variables** section, add:
-   - `HUGGINGFACE_API_KEY`: Your HuggingFace API token
+   - `HF_TOKEN`: Your HuggingFace API token
    - `POSTGRES_URL_NON_POOLING`: Your Supabase connection string
 5. Click **Deploy**.
 

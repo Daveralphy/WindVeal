@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
+import { OpenAI } from "openai";
 import persona from "@/data/persona.json";
 
-const tryWindVeal = async (message, history) => {
-  const apiKey = process.env.HF_API_KEY;
-  if (!apiKey) throw new Error("HF_API_KEY not set");
+const client = new OpenAI({
+  baseURL: "https://router.huggingface.co/v1",
+  apiKey: process.env.HF_TOKEN,
+});
 
-  // Format messages for OpenAI-compatible endpoint
+const tryWindVeal = async (message, history) => {
+  if (!process.env.HF_TOKEN) throw new Error("HF_TOKEN not set");
+
   const messages = [
     { role: "system", content: persona.system_instruction },
     ...history.map(msg => ({
@@ -15,34 +19,15 @@ const tryWindVeal = async (message, history) => {
     { role: "user", content: message }
   ];
 
-  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "HuggingFaceH4/zephyr-7b-beta",
-      messages,
-      temperature: 0.7,
-      max_tokens: 512,
-    }),
+  const chatCompletion = await client.chat.completions.create({
+    model: "HuggingFaceH4/zephyr-7b-beta:featherless-ai",
+    messages,
+    temperature: 0.7,
+    max_tokens: 512,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[HuggingFace] Status: ${response.status}, Error: ${errorText}`);
-    throw new Error(`HuggingFace error ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  console.log(`[HuggingFace] Response received`);
-  
-  if (data.choices && data.choices[0]?.message?.content) {
-    return data.choices[0].message.content;
-  }
-  
-  throw new Error(`Unexpected HuggingFace response format: ${JSON.stringify(data)}`);
+  console.log(`[WindVeal] Response received from Zephyr-7B-Beta`);
+  return chatCompletion.choices[0].message.content;
 };
 
 export async function POST(req) {
