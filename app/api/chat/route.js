@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import persona from "@/data/persona.json";
 
-// Multi-model fallback system
 const tryGemini = async (message, history) => {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_API_KEY not set");
@@ -78,8 +77,8 @@ const tryGrok = async (message, history) => {
     { role: "user", content: message }
   ];
 
-  // Try different Grok model names
-  const modelNames = ["grok-1", "grok-2", "grok-vision"];
+  // Try only working Grok models (skip grok-vision which returns 403)
+  const modelNames = ["grok-1", "grok-2"];
   let lastError;
 
   for (const modelName of modelNames) {
@@ -123,7 +122,6 @@ export async function POST(req) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // Try models in order: Gemini  OpenAI  Grok
     const models = [
       { name: "Gemini", fn: tryGemini },
       { name: "OpenAI", fn: tryOpenAI },
