@@ -74,6 +74,13 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen, chatMenuOpenId]);
 
+  // Persist active chat ID
+  useEffect(() => {
+    if (activeChatId) {
+      localStorage.setItem('lastActiveChatId', activeChatId);
+    }
+  }, [activeChatId]);
+
   // Load user from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('windvealUser');
@@ -83,7 +90,7 @@ export default function Home() {
         setCurrentUser(user);
         
         // Load history for this user
-        loadChats(user.id);
+        loadChats(user.id, true);
       } catch (error) {
         console.error("Failed to parse saved user:", error);
         localStorage.removeItem('windvealUser');
@@ -91,13 +98,22 @@ export default function Home() {
     }
   }, []);
 
-  const loadChats = async (userId) => {
+  const loadChats = async (userId, restoreActive = false) => {
     try {
       const res = await fetch(`/api/history?userId=${userId}`);
       const data = await res.json();
       if (data.chats) {
         setChats(data.chats);
-        // Don't auto-load a chat, let user choose or start new
+        
+        if (restoreActive) {
+          const lastId = localStorage.getItem('lastActiveChatId');
+          if (lastId) {
+            const chat = data.chats.find(c => c.id == lastId);
+            if (chat) {
+              handleLoadChat(chat);
+            }
+          }
+        }
       }
     } catch (err) {
       console.error("Error loading chats:", err);
@@ -164,7 +180,7 @@ export default function Home() {
     setIsAuthModalOpen(false);
     
     // Load history from DB
-    loadChats(user.id);
+    loadChats(user.id, true);
   };
 
   const handleLogout = () => {
@@ -176,6 +192,7 @@ export default function Home() {
   const handleNewChat = () => {
     setMessages([]);
     setActiveChatId(null);
+    localStorage.removeItem('lastActiveChatId');
     setIsSidebarOpen(false);
     setActiveSetting(null);
   };
@@ -198,6 +215,7 @@ export default function Home() {
       if (activeChatId === chatId) {
         setMessages([]);
         setActiveChatId(null);
+        localStorage.removeItem('lastActiveChatId');
       }
       loadChats(currentUser.id);
       setChatMenuOpenId(null);
@@ -528,7 +546,7 @@ export default function Home() {
                   onClick={handleNewChat}
                   className="md:hidden w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
                 >
-                  <PlusCircle size={20} /> New Chat
+                  New Chat
                 </button>
                 <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
                   <UserCircle size={20} /> Profile
@@ -821,9 +839,8 @@ export default function Home() {
             {currentUser && (
               <button 
                 onClick={handleNewChat}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
               >
-                <PlusCircle size={18} />
                 <span>New Chat</span>
               </button>
             )}
