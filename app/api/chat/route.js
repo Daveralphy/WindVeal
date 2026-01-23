@@ -22,7 +22,7 @@ const tryWindVeal = async (message, history) => {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "mistralai/Mistral-7B-Instruct-v0.2",
+      model: "microsoft/phi-3-mini-4k-instruct",
       messages,
       temperature: 0.7,
       max_tokens: 512,
