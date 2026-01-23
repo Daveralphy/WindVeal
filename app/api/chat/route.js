@@ -5,21 +5,27 @@ const tryWindVeal = async (message, history) => {
   const apiKey = process.env.HF_API_KEY;
   if (!apiKey) throw new Error("HF_API_KEY not set");
 
-  // Build conversation context
-  const conversationContext = history
-    .map(msg => `${msg.role === "bot" ? "Assistant" : "User"}: ${msg.content}`)
-    .join("\n");
+  // Format messages for OpenAI-compatible endpoint
+  const messages = [
+    { role: "system", content: persona.system_instruction },
+    ...history.map(msg => ({
+      role: msg.role === "bot" ? "assistant" : "user",
+      content: msg.content
+    })),
+    { role: "user", content: message }
+  ];
 
-  const fullPrompt = `${persona.system_instruction}\n\n${conversationContext}\nUser: ${message}\nAssistant:`;
-
-  const response = await fetch("https://router.huggingface.co/api/models/mistralai/Mistral-7B-Instruct-v0.2", {
+  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      inputs: fullPrompt,
+      model: "mistralai/Mistral-7B-Instruct-v0.2",
+      messages,
+      temperature: 0.7,
+      max_tokens: 512,
     }),
   });
 
@@ -30,12 +36,10 @@ const tryWindVeal = async (message, history) => {
   }
 
   const data = await response.json();
-  console.log(`[HuggingFace] Response received:`, JSON.stringify(data).substring(0, 200));
+  console.log(`[HuggingFace] Response received`);
   
-  if (Array.isArray(data) && data[0]?.generated_text) {
-    const generatedText = data[0].generated_text;
-    const assistantResponse = generatedText.split("Assistant:")?.pop()?.trim() || generatedText;
-    return assistantResponse;
+  if (data.choices && data.choices[0]?.message?.content) {
+    return data.choices[0].message.content;
   }
   
   throw new Error(`Unexpected HuggingFace response format: ${JSON.stringify(data)}`);
