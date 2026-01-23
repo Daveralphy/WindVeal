@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { evaluate } from 'mathjs';
 import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info, Send, PanelLeft, CreditCard, Sliders, Upload, MoreVertical, Edit2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import intents from '@/data/intents.json';
 import suggestions from '@/app/suggestions.json';
 import AuthModal from '../components/AuthModal';
@@ -540,28 +541,42 @@ export default function Home() {
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* User Section */}
           <div className="space-y-2">
-            {currentUser ? (
-              <>
-                <button 
-                  onClick={handleNewChat}
-                  className="md:hidden w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
+            <AnimatePresence mode="wait">
+              {currentUser ? (
+                <motion.div
+                  key="user-menu"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2 overflow-hidden"
                 >
-                  New Chat
-                </button>
-                <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
-                  <UserCircle size={20} /> Profile
-                </button>
-              </>
-            ) : (
-              <>
-                <button 
-                  onClick={() => { setIsAuthModalOpen(true); setIsSidebarOpen(false); }}
-                  className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
+                  <button 
+                    onClick={handleNewChat}
+                    className="md:hidden w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
+                  >
+                    New Chat
+                  </button>
+                  <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
+                    <UserCircle size={20} /> Profile
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="guest-menu"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
                 >
-                  <UserCircle size={20} /> Login
-                </button>
-              </>
-            )}
+                  <button 
+                    onClick={() => { setIsAuthModalOpen(true); setIsSidebarOpen(false); }}
+                    className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
+                  >
+                    <UserCircle size={20} /> Login
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Settings Section */}
@@ -629,41 +644,48 @@ export default function Home() {
           </div>
 
           {/* History Section (Only if logged in) */}
-          {currentUser && chats.length > 0 && (
-            <div>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">History</h3>
-              <div className="space-y-2">
-                {chats.map(chat => (
-                  <div key={chat.id} className="group relative flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors chat-menu-container">
-                    <button 
-                      onClick={() => handleLoadChat(chat)}
-                      className={`flex-1 text-left text-sm truncate ${activeChatId === chat.id ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-200'}`}
-                    >
-                      {chat.title || 'New Chat'}
-                    </button>
-                    
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setChatMenuOpenId(chatMenuOpenId === chat.id ? null : chat.id); }}
-                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <MoreVertical size={16} />
-                    </button>
+          <AnimatePresence>
+            {currentUser && chats.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">History</h3>
+                <div className="space-y-2">
+                  {chats.map(chat => (
+                    <div key={chat.id} className="group relative flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors chat-menu-container">
+                      <button 
+                        onClick={() => handleLoadChat(chat)}
+                        className={`flex-1 text-left text-sm truncate ${activeChatId === chat.id ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-200'}`}
+                      >
+                        {chat.title || 'New Chat'}
+                      </button>
+                      
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setChatMenuOpenId(chatMenuOpenId === chat.id ? null : chat.id); }}
+                        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
 
-                    {chatMenuOpenId === chat.id && (
-                      <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in zoom-in duration-150">
-                        <button onClick={() => handleRenameChat(chat.id, chat.title)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-                          <Edit2 size={12} /> Rename
-                        </button>
-                        <button onClick={() => handleDeleteChat(chat.id)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
-                          <Trash2 size={12} /> Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                      {chatMenuOpenId === chat.id && (
+                        <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in zoom-in duration-150">
+                          <button onClick={() => handleRenameChat(chat.id, chat.title)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                            <Edit2 size={12} /> Rename
+                          </button>
+                          <button onClick={() => handleDeleteChat(chat.id)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
         </div>
 
@@ -678,24 +700,46 @@ export default function Home() {
           {/* Desktop Footer: User Info */}
           <div className="hidden md:flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-               {currentUser ? (
-                 <UserCircle size={32} className="text-gray-500 dark:text-gray-400" />
-               ) : (
-                 <UserCircle size={32} className="text-gray-400 dark:text-gray-500" />
-               )}
+               <AnimatePresence mode="wait">
+                 {currentUser ? (
+                   <motion.div key="user-avatar" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                     <UserCircle size={32} className="text-gray-500 dark:text-gray-400" />
+                   </motion.div>
+                 ) : (
+                   <motion.div key="guest-avatar" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                     <UserCircle size={32} className="text-gray-400 dark:text-gray-500" />
+                   </motion.div>
+                 )}
+               </AnimatePresence>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {currentUser ? currentUser.username : 'Guest'}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Free
-              </p>
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={currentUser ? 'user-info' : 'guest-info'}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                >
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {currentUser ? currentUser.username : 'Guest'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Free
+                  </p>
+                </motion.div>
+              </AnimatePresence>
             </div>
             {currentUser && (
-              <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 transition-colors" title="Logout">
+              <motion.button 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={handleLogout} 
+                className="text-gray-400 hover:text-red-500 transition-colors" 
+                title="Logout"
+              >
                 <LogOut size={18} />
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
@@ -771,11 +815,17 @@ export default function Home() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-300 dark:border-gray-600"
               >
-                {currentUser ? (
-                   <UserCircle size={24} className="text-gray-500 dark:text-gray-400" />
-                 ) : (
-                   <UserCircle size={24} className="text-gray-400 dark:text-gray-500" />
-                 )}
+                <AnimatePresence mode="wait">
+                  {currentUser ? (
+                    <motion.div key="user-icon" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                      <UserCircle size={24} className="text-gray-500 dark:text-gray-400" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="guest-icon" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                      <UserCircle size={24} className="text-gray-400 dark:text-gray-500" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </button>
 
               {/* Mobile Profile Dropdown */}
@@ -836,14 +886,19 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4">
-            {currentUser && (
-              <button 
-                onClick={handleNewChat}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
-              >
-                <span>New Chat</span>
-              </button>
-            )}
+            <AnimatePresence>
+              {currentUser && (
+                <motion.button 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  onClick={handleNewChat}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
+                >
+                  <span>New Chat</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
 
             <div className="relative share-menu-container">
               <button 
