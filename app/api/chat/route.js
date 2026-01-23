@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import persona from "@/data/persona.json";
 
 const tryWindVeal = async (message, history) => {
-  const apiKey = process.env.HUGGINGFACE_API_KEY;
-  if (!apiKey) throw new Error("HUGGINGFACE_API_KEY not set");
+  const apiKey = process.env.HF_API_KEY;
+  if (!apiKey) throw new Error("HF_API_KEY not set");
 
   // Build conversation context
   const conversationContext = history
@@ -12,7 +12,7 @@ const tryWindVeal = async (message, history) => {
 
   const fullPrompt = `${persona.system_instruction}\n\n${conversationContext}\nUser: ${message}\nAssistant:`;
 
-  const response = await fetch("https://router.huggingface.co/models/tiiuae/falcon-7b-instruct", {
+  const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -20,6 +20,10 @@ const tryWindVeal = async (message, history) => {
     },
     body: JSON.stringify({
       inputs: fullPrompt,
+      parameters: {
+        max_new_tokens: 512,
+        temperature: 0.7,
+      },
     }),
   });
 
