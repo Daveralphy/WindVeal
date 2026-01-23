@@ -751,17 +751,12 @@ export default function Home() {
         {/* Desktop Header Layout (Hidden on mobile) */}
         <div className="hidden md:flex justify-between items-center p-4 h-auto">
           <div className="flex items-center gap-3 z-20">
-            <div 
-              className="relative w-12 h-12 cursor-pointer group z-20 flex-shrink-0"
+            <button 
+              className="text-primary dark:text-white hover:opacity-80 transition-opacity"
               onClick={() => setIsSidebarOpen(true)}
             >
-              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100 group-hover:opacity-0">
-                 <img src="/images/logo.png" alt="Logo" className="w-full h-full object-contain" />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 group-hover:opacity-100 text-primary dark:text-white">
-                <Menu size={32} />
-              </div>
-            </div>
+              <PanelLeft size={32} />
+            </button>
 
             {/* Title/Model Selector (Desktop) */}
             <div className="relative header-model-menu-container">
