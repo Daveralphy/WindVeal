@@ -421,7 +421,8 @@ export default function Home() {
       if (response.ok) {
         await animateResponse(data.response);
       } else {
-        setMessages(prev => [...prev, { role: 'bot', content: "I'm having trouble connecting to the cloud.", feedback: null }]);
+        const errorMessage = data.error || "I'm having trouble connecting to the cloud.";
+        setMessages(prev => [...prev, { role: 'bot', content: errorMessage, feedback: null }]);
       }
     } catch (error) {
       if (error.name !== 'AbortError') {
