@@ -12,7 +12,7 @@ const tryWindVeal = async (message, history) => {
 
   const fullPrompt = `${persona.system_instruction}\n\n${conversationContext}\nUser: ${message}\nAssistant:`;
 
-  const response = await fetch("https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct", {
+  const response = await fetch("https://router.huggingface.co/models/tiiuae/falcon-7b-instruct", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
