@@ -67,6 +67,45 @@ const tryOpenAI = async (message, history) => {
   return data.choices[0].message.content;
 };
 
+const tryHuggingFace = async (message, history) => {
+  const apiKey = process.env.HUGGINGFACE_API_KEY;
+  if (!apiKey) throw new Error("HUGGINGFACE_API_KEY not set");
+
+  // Build conversation context
+  const conversationContext = history
+    .map(msg => `${msg.role === "bot" ? "Assistant" : "User"}: ${msg.content}`)
+    .join("\n");
+
+  const fullPrompt = `${persona.system_instruction}\n\n${conversationContext}\nUser: ${message}\nAssistant:`;
+
+  const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      inputs: fullPrompt,
+      parameters: {
+        max_new_tokens: 512,
+        temperature: 0.7,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.[0] || `HuggingFace error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const generatedText = data[0]?.generated_text || "";
+  
+  // Extract only the assistant's response
+  const assistantResponse = generatedText.split("Assistant:")?.pop()?.trim() || generatedText;
+  return assistantResponse;
+};
+
 export async function POST(req) {
   try {
     const { message, history = [] } = await req.json();
@@ -75,10 +114,11 @@ export async function POST(req) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // Try models in order: Gemini  OpenAI (Grok removed due to 403 errors)
+    // Try models in order: Gemini → OpenAI → HuggingFace
     const models = [
       { name: "Gemini", fn: tryGemini },
       { name: "OpenAI", fn: tryOpenAI },
+      { name: "HuggingFace", fn: tryHuggingFace },
     ];
 
     let lastError;
