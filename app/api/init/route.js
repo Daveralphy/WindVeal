@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import pool from '../../lib/db';
 
-// Prevent this API route from being prerendered during build
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
   try {
-    // Create users table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -17,7 +15,6 @@ export async function GET(req) {
       )
     `);
 
-    // Create chat_history table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS chat_history (
         user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -26,10 +23,7 @@ export async function GET(req) {
       )
     `);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Database tables initialized successfully' 
-    });
+    return NextResponse.json({ success: true, message: 'Database tables initialized successfully' });
   } catch (error) {
     console.error('Database initialization error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
