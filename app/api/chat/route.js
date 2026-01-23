@@ -61,7 +61,7 @@ const tryOpenAI = async (message, history) => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || "OpenAI API error");
+    throw new Error(error.error?.message || `OpenAI error: ${response.status}`);
   }
 
   const data = await response.json();
@@ -78,27 +78,41 @@ const tryGrok = async (message, history) => {
     { role: "user", content: message }
   ];
 
-  const response = await fetch("https://api.x.ai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "grok-beta",
-      messages,
-      temperature: 0.7,
-      max_tokens: 1024,
-    }),
-  });
+  // Try different Grok model names
+  const modelNames = ["grok-1", "grok-2", "grok-vision"];
+  let lastError;
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || "Grok API error");
+  for (const modelName of modelNames) {
+    try {
+      const response = await fetch("https://api.x.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: modelName,
+          messages,
+          temperature: 0.7,
+          max_tokens: 1024,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        lastError = new Error(error.error?.message || `Grok ${modelName} error: ${response.status}`);
+        continue;
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (e) {
+      lastError = e;
+      continue;
+    }
   }
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+  throw lastError || new Error("All Grok models failed");
 };
 
 export async function POST(req) {
