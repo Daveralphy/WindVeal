@@ -7,7 +7,7 @@ const tryGemini = async (message, history) => {
   if (!apiKey) throw new Error("GOOGLE_API_KEY not set");
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   const chatHistory = [
     { role: "user", parts: [{ text: `System Instruction: ${persona.system_instruction}` }] },
@@ -51,7 +51,7 @@ const tryOpenAI = async (message, history) => {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4-turbo",
+      model: "gpt-3.5-turbo",
       messages,
       temperature: 0.7,
       max_tokens: 1024,
