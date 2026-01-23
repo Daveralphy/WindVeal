@@ -16,8 +16,10 @@ export async function GET(req) {
     `);
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS chat_history (
-        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      CREATE TABLE IF NOT EXISTS user_chats (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        title TEXT,
         messages JSONB NOT NULL,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )

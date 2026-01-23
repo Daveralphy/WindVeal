@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { evaluate } from 'mathjs';
-import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info, Send, PanelLeft, CreditCard, Sliders, Upload } from 'lucide-react';
+import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info, Send, PanelLeft, CreditCard, Sliders, Upload, MoreVertical, Edit2 } from 'lucide-react';
 import intents from '@/data/intents.json';
 import suggestions from '@/app/suggestions.json';
 import AuthModal from '../components/AuthModal';
@@ -33,6 +33,9 @@ export default function Home() {
   const [currentModel, setCurrentModel] = useState('WindVeal Mini');
   const [isHeaderModelMenuOpen, setIsHeaderModelMenuOpen] = useState(false);
   const [shuffledSuggestions, setShuffledSuggestions] = useState([]);
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [chatMenuOpenId, setChatMenuOpenId] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -63,10 +66,13 @@ export default function Home() {
       if (isHeaderModelMenuOpen && !event.target.closest('.header-model-menu-container')) {
         setIsHeaderModelMenuOpen(false);
       }
+      if (chatMenuOpenId && !event.target.closest('.chat-menu-container')) {
+        setChatMenuOpenId(null);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen]);
+  }, [isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen, chatMenuOpenId]);
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -77,22 +83,26 @@ export default function Home() {
         setCurrentUser(user);
         
         // Load history for this user
-        fetch(`/api/history?userId=${user.id}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.history && data.history.length > 0) {
-              setMessages(data.history.map(m => ({ ...m, feedback: m.feedback || null })));
-            } else {
-              setMessages([]);
-            }
-          })
-          .catch(err => console.error("Error loading history:", err));
+        loadChats(user.id);
       } catch (error) {
         console.error("Failed to parse saved user:", error);
         localStorage.removeItem('windvealUser');
       }
     }
   }, []);
+
+  const loadChats = async (userId) => {
+    try {
+      const res = await fetch(`/api/history?userId=${userId}`);
+      const data = await res.json();
+      if (data.chats) {
+        setChats(data.chats);
+        // Don't auto-load a chat, let user choose or start new
+      }
+    } catch (err) {
+      console.error("Error loading chats:", err);
+    }
+  };
 
   // Load settings from local storage on mount
   useEffect(() => {
@@ -125,16 +135,26 @@ export default function Home() {
     }
   };
 
-  // Auto-save history when messages change (if logged in)
-  useEffect(() => {
-    if (currentUser && messages.length > 0) {
-      fetch('/api/history', {
+  const saveChat = async (msgs, chatId) => {
+    if (!currentUser || msgs.length === 0) return;
+    
+    try {
+      const res = await fetch('/api/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id, messages })
-      }).catch(err => console.error("Failed to save history", err));
-    }
-  }, [messages, currentUser]);
+        body: JSON.stringify({ 
+          userId: currentUser.id, 
+          messages: msgs,
+          chatId: chatId
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.chatId) {
+        if (!chatId) setActiveChatId(data.chatId);
+        loadChats(currentUser.id);
+      }
+    } catch (err) { console.error("Failed to save history", err); }
+  };
 
   const handleAuthSuccess = async (user) => {
     setCurrentUser(user);
@@ -142,18 +162,7 @@ export default function Home() {
     setIsAuthModalOpen(false);
     
     // Load history from DB
-    try {
-      const res = await fetch(`/api/history?userId=${user.id}`);
-      const data = await res.json();
-      if (data.history && data.history.length > 0) {
-        setMessages(data.history.map(m => ({ ...m, feedback: m.feedback || null })));
-      } else {
-        setMessages([]);
-      }
-    } catch (error) {
-      console.error("Error loading history:", error);
-      setMessages([]);
-    }
+    loadChats(user.id);
   };
 
   const handleLogout = () => {
@@ -162,47 +171,53 @@ export default function Home() {
     setMessages([{ role: 'bot', content: "You have been logged out.", feedback: null }]);
   };
 
-  const handleNewChat = async () => {
-    if (currentUser && messages.length > 1) {
-      const confirmNew = window.confirm("Starting a new chat will delete your previous history. Are you sure you want to continue?");
-      if (!confirmNew) return;
-
-      // Explicitly delete old history from DB (though saving the new state would also overwrite it)
-      try {
-        await fetch('/api/history', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: currentUser.id })
-        });
-      } catch (err) {
-        console.error("Error clearing history", err);
-      }
-    }
-
+  const handleNewChat = () => {
     setMessages([]);
+    setActiveChatId(null);
     setIsSidebarOpen(false);
     setActiveSetting(null);
   };
 
-  const handleDeleteHistory = async () => {
+  const handleLoadChat = (chat) => {
+    setMessages(chat.messages);
+    setActiveChatId(chat.id);
+    setIsSidebarOpen(false);
+  };
+
+  const handleDeleteChat = async (chatId) => {
     if (!currentUser) return;
-    if (window.confirm("Are you sure you want to delete your chat history? This cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete this chat?")) {
       await fetch('/api/history', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id })
+        body: JSON.stringify({ userId: currentUser.id, chatId })
       });
-      setMessages([{ role: 'bot', content: 'History deleted. How can I help you?', feedback: null }]);
+      
+      if (activeChatId === chatId) {
+        setMessages([]);
+        setActiveChatId(null);
+      }
+      loadChats(currentUser.id);
+      setChatMenuOpenId(null);
     }
   };
 
-  const getHistorySummary = () => {
-    if (messages.length <= 1) return null;
-    const firstUserMsg = messages.find(m => m.role === 'user');
-    if (firstUserMsg) {
-      return firstUserMsg.content.substring(0, 30) + (firstUserMsg.content.length > 30 ? "..." : "");
+  const handleRenameChat = async (chatId, currentTitle) => {
+    if (!currentUser) return;
+    const newTitle = prompt("Enter new chat name:", currentTitle);
+    if (newTitle && newTitle.trim() !== "") {
+      await fetch('/api/history', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: currentUser.id, 
+          chatId, 
+          title: newTitle.trim() 
+        })
+      });
+      loadChats(currentUser.id);
+      setChatMenuOpenId(null);
     }
-    return "Current Conversation";
   };
 
   const handleCopy = (text, idx) => {
@@ -358,6 +373,7 @@ export default function Home() {
       const delay = words[i].trim() === '' ? 20 : 60;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
+    saveChat([...messages, { role: 'bot', content: text }], activeChatId);
   };
 
   const handleSend = async (e, textOverride) => {
@@ -371,7 +387,8 @@ export default function Home() {
     }
 
     const userMsg = { role: 'user', content: text };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput('');
     setSelectedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -379,6 +396,8 @@ export default function Home() {
     
     setIsTyping(true);
     abortControllerRef.current = new AbortController();
+
+    saveChat(updatedMessages, activeChatId);
 
     // --- LOCAL BRAIN LOGIC ---
     const lowerInput = userMsg.content.toLowerCase();
@@ -584,32 +603,53 @@ export default function Home() {
           </div>
 
           {/* History Section (Only if logged in) */}
-          {currentUser && (
+          {currentUser && chats.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">History</h3>
               <div className="space-y-2">
-                <button 
-                  onClick={handleNewChat}
-                  className="w-full flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                >
-                  <PlusCircle size={18} />
-                  <span>New Chat</span>
-                </button>
-                
-                {getHistorySummary() && (
-                  <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 border-l-2 border-primary pl-3 ml-1 truncate">
-                    {getHistorySummary()}
+                {chats.map(chat => (
+                  <div key={chat.id} className="group relative flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors chat-menu-container">
+                    <button 
+                      onClick={() => handleLoadChat(chat)}
+                      className={`flex-1 text-left text-sm truncate ${activeChatId === chat.id ? 'text-primary font-medium' : 'text-gray-700 dark:text-gray-200'}`}
+                    >
+                      {chat.title || 'New Chat'}
+                    </button>
+                    
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setChatMenuOpenId(chatMenuOpenId === chat.id ? null : chat.id); }}
+                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+
+                    {chatMenuOpenId === chat.id && (
+                      <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden animate-in fade-in zoom-in duration-150">
+                        <button onClick={() => handleRenameChat(chat.id, chat.title)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
+                          <Edit2 size={12} /> Rename
+                        </button>
+                        <button onClick={() => handleDeleteChat(chat.id)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+                          <Trash2 size={12} /> Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-                <button 
-                  onClick={handleDeleteHistory}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <Trash2 size={18} />
-                  <span>Clear Chat</span>
-                </button>
+                ))}
               </div>
             </div>
+          )}
+
+          {/* New Chat Button (Always visible if logged in) */}
+          {currentUser && (
+             <div className="mt-4">
+               <button 
+                 onClick={handleNewChat}
+                 className="w-full flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+               >
+                 <PlusCircle size={18} />
+                 <span>New Chat</span>
+               </button>
+             </div>
           )}
         </div>
 
