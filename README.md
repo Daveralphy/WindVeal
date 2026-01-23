@@ -1,6 +1,6 @@
-# WindVeal: Hybrid AI Assistant
+# WindVeal: AI Assistant
 
-WindVeal (formerly Dave Chatbot) is a modern, hybrid AI assistant built with **Next.js** and deployed on **Vercel**. It features a unique "Hybrid Intelligence" system that handles simple queries locally in the browser for instant responses, while leveraging Google's **Gemini 1.5 Flash** model for complex reasoning and creative tasks.
+WindVeal (formerly Dave Chatbot) is a modern AI assistant built with **Next.js** and deployed on **Vercel**. It features a unique "Hybrid Intelligence" system that handles simple queries locally in the browser for instant responses, while leveraging **HuggingFace's Mistral-7B** model for complex reasoning and creative tasks.
 
 ---
 
@@ -8,11 +8,12 @@ WindVeal (formerly Dave Chatbot) is a modern, hybrid AI assistant built with **N
 
 - **Hybrid Intelligence:**
   - **Local Brain:** Instantly answers common questions (Math, Identity, Definitions) directly in the browser using a customizable `intents.json` file. Zero latency, zero API costs.
-  - **Cloud Brain:** Seamlessly hands off complex queries to Google Gemini for deep understanding.
+  - **Cloud Brain:** Seamlessly hands off complex queries to WindVeal Mini (HuggingFace Mistral-7B) for deep understanding.
 - **Modern Tech Stack:** Built with Next.js (React), Tailwind CSS, and Vercel Serverless Functions.
-- **Secure Authentication:** Stateless authentication using NextAuth.js / JWT.
-- **Persistent History:** Chat history is stored securely in a cloud PostgreSQL database (Vercel Postgres / Supabase).
+- **Secure Authentication:** Custom authentication using password hashing (pbkdf2).
+- **Persistent History:** Chat history is stored securely in a cloud PostgreSQL database (Supabase).
 - **Serverless Architecture:** No servers to manage. Scales automatically on Vercel's edge network.
+- **Professional Tiering:** WindVeal Mini, Pro, and Premium tiers for future scalability.
 
 ---
 
@@ -32,7 +33,7 @@ WindVeal/
 │   │   ├── auth/
 │   │   │   ├── login/route.js       # Login endpoint
 │   │   │   └── register/route.js    # Registration endpoint
-│   │   ├── chat/route.js            # Chat API (Gemini integration)
+│   │   ├── chat/route.js            # Chat API (HuggingFace Mistral integration)
 │   │   └── history/route.js         # Chat history storage
 │   ├── lib/
 │   │   └── db.js                    # Database connection pool
@@ -65,7 +66,8 @@ WindVeal/
 
 ### Prerequisites
 - Node.js 18+ installed.
-- A Google Cloud API Key (for Gemini).
+- A HuggingFace API token.
+- A Supabase account for PostgreSQL database.
 - A Vercel account (optional, for deployment).
 
 ### Installation
@@ -84,9 +86,8 @@ WindVeal/
 3. **Configure Environment Variables:**
    Create a `.env.local` file in the root directory:
    ```env
-   GOOGLE_API_KEY="your_gemini_api_key_here"
-   POSTGRES_URL="your_database_connection_string"
-   NEXTAUTH_SECRET="your_generated_secret_key"
+   HUGGINGFACE_API_KEY="your_huggingface_token_here"
+   POSTGRES_URL_NON_POOLING="your_supabase_connection_string"
    ```
 
 4. **Run Locally:**
@@ -116,7 +117,9 @@ Edit `data/persona.json` to change how the AI behaves during complex conversatio
 1. Push your code to GitHub.
 2. Go to Vercel.com and click **"Add New Project"**.
 3. Import your WindVeal repository.
-4. In the **Environment Variables** section, add your `GOOGLE_API_KEY`, `POSTGRES_URL`, and `NEXTAUTH_SECRET`.
+4. In the **Environment Variables** section, add:
+   - `HUGGINGFACE_API_KEY`: Your HuggingFace API token
+   - `POSTGRES_URL_NON_POOLING`: Your Supabase connection string
 5. Click **Deploy**.
 
 The landing page (`public/index.html`) will be served as a static file, and the Next.js app will run on the same domain.

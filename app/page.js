@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { evaluate } from 'mathjs';
-import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, MoreVertical, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info, Send, PanelLeft, CreditCard, Sliders, Upload } from 'lucide-react';
+import { UserCircle, LogOut, PlusCircle, Trash2, Menu, X, Copy, ThumbsUp, ThumbsDown, Check, Plus, Image as ImageIcon, FileText, Music, Video, Square, Mic, Share2, Moon, Sun, Type, Facebook, Twitter, Linkedin, MessageCircle, HelpCircle, ChevronDown, Bell, Volume2, Info, Send, PanelLeft, CreditCard, Sliders, Upload } from 'lucide-react';
 import intents from '@/data/intents.json';
 import suggestions from '@/app/suggestions.json';
 import AuthModal from '../components/AuthModal';
@@ -30,8 +30,7 @@ export default function Home() {
   const [theme, setTheme] = useState('light');
   const [fontSize, setFontSize] = useState('medium');
   const [currentUser, setCurrentUser] = useState(null);
-  const [openModelMenu, setOpenModelMenu] = useState(null);
-  const [currentModel, setCurrentModel] = useState('gemini');
+  const [currentModel, setCurrentModel] = useState('WindVeal Mini');
   const [isHeaderModelMenuOpen, setIsHeaderModelMenuOpen] = useState(false);
   const [shuffledSuggestions, setShuffledSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
@@ -55,9 +54,6 @@ export default function Home() {
       if (fileMenuRef.current && !fileMenuRef.current.contains(event.target)) {
         setIsFileMenuOpen(false);
       }
-      if (openModelMenu !== null && !event.target.closest('.model-menu-container')) {
-        setOpenModelMenu(null);
-      }
       if (isShareOpen && !event.target.closest('.share-menu-container')) {
         setIsShareOpen(false);
       }
@@ -70,7 +66,7 @@ export default function Home() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openModelMenu, isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen]);
+  }, [isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen]);
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -232,7 +228,6 @@ export default function Home() {
 
   const handleModelChange = (model) => {
     setCurrentModel(model);
-    setOpenModelMenu(null); // Close menu after selection
   };
 
   const handleFileSelect = () => {
@@ -675,9 +670,9 @@ export default function Home() {
               {isHeaderModelMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
                   <div className="p-2 space-y-1">
-                    {['windveal', 'gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
+                    {['WindVeal Mini', 'WindVeal Pro', 'WindVeal Premium'].map(model => (
                       <button key={model} onClick={() => { handleModelChange(model); setIsHeaderModelMenuOpen(false); }} className="w-full text-left flex justify-between items-center px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors">
-                        <span className="capitalize">{model}</span>
+                        <span>{model}</span>
                         {currentModel === model && <Check size={16} className="text-primary" />}
                       </button>
                     ))}
@@ -779,9 +774,9 @@ export default function Home() {
               {isHeaderModelMenuOpen && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
                   <div className="p-2 space-y-1">
-                    {['windveal', 'gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
+                    {['WindVeal Mini', 'WindVeal Pro', 'WindVeal Premium'].map(model => (
                       <button key={model} onClick={() => { handleModelChange(model); setIsHeaderModelMenuOpen(false); }} className="w-full text-left flex justify-between items-center px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors">
-                        <span className="capitalize">{model}</span>
+                        <span>{model}</span>
                         {currentModel === model && <Check size={16} className="text-primary" />}
                       </button>
                     ))}
@@ -870,29 +865,6 @@ export default function Home() {
                       <button onClick={() => handleFeedback(idx, 'down')} className="hover:text-red-500" title="Bad response">
                         <ThumbsDown size={16} className={msg.feedback === 'down' ? 'text-red-500' : ''} />
                       </button>
-                      <div className="relative model-menu-container">
-                        <button onClick={() => setOpenModelMenu(openModelMenu === idx ? null : idx)} className="hover:text-primary" title="Change model">
-                          <MoreVertical size={16} />
-                        </button>
-                        {openModelMenu === idx && (
-                          <div className={`absolute ${idx < 2 ? 'top-full mt-2' : 'bottom-full mb-2'} w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10 p-2`}>
-                            <p className="text-xs text-gray-400 px-2 pb-1">MODELS</p>
-                            <ul>
-                              {['windveal', 'gemini', 'chatGPT', 'deepseek', 'grok'].map(model => (
-                                <li key={model}>
-                                  <button 
-                                    onClick={() => handleModelChange(model)}
-                                    className="w-full text-left flex justify-between items-center px-2 py-1.5 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
-                                  >
-                                    <span className="capitalize">{model}</span>
-                                    {currentModel === model && <Check size={16} className="text-primary" />}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </div>
