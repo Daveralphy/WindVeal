@@ -28,16 +28,21 @@ const tryWindVeal = async (message, history) => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.[0] || `WindVeal error: ${response.status}`);
+    const errorText = await response.text();
+    console.error(`[HuggingFace] Status: ${response.status}, Error: ${errorText}`);
+    throw new Error(`HuggingFace error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
-  const generatedText = data[0]?.generated_text || "";
+  console.log(`[HuggingFace] Response received:`, JSON.stringify(data).substring(0, 200));
   
-  // Extract only the assistant's response
-  const assistantResponse = generatedText.split("Assistant:")?.pop()?.trim() || generatedText;
-  return assistantResponse;
+  if (Array.isArray(data) && data[0]?.generated_text) {
+    const generatedText = data[0].generated_text;
+    const assistantResponse = generatedText.split("Assistant:")?.pop()?.trim() || generatedText;
+    return assistantResponse;
+  }
+  
+  throw new Error(`Unexpected HuggingFace response format: ${JSON.stringify(data)}`);
 };
 
 export async function POST(req) {
