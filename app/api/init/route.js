@@ -1,4 +1,8 @@
+import { NextResponse } from 'next/server';
 import pool from '../../lib/db';
+
+// Prevent this API route from being prerendered during build
+export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
   try {
