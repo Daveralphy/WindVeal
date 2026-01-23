@@ -1,11 +1,11 @@
-﻿﻿import { Pool } from 'pg';
+import { Pool } from "pg";
 
 let pool;
 
 if (!global.pool) {
   global.pool = new Pool({
     connectionString: process.env.POSTGRES_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+    ssl: { rejectUnauthorized: false },
   });
 }
 pool = global.pool;
