@@ -72,6 +72,32 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openModelMenu, isShareOpen, isProfileOpen, isFileMenuOpen, isHeaderModelMenuOpen]);
 
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('windvealUser');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        setCurrentUser(user);
+        
+        // Load history for this user
+        fetch(`/api/history?userId=${user.id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.history && data.history.length > 0) {
+              setMessages(data.history.map(m => ({ ...m, feedback: m.feedback || null })));
+            } else {
+              setMessages([]);
+            }
+          })
+          .catch(err => console.error("Error loading history:", err));
+      } catch (error) {
+        console.error("Failed to parse saved user:", error);
+        localStorage.removeItem('windvealUser');
+      }
+    }
+  }, []);
+
   // Load settings from local storage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -116,6 +142,7 @@ export default function Home() {
 
   const handleAuthSuccess = async (user) => {
     setCurrentUser(user);
+    localStorage.setItem('windvealUser', JSON.stringify(user)); // Persist user
     setIsAuthModalOpen(false);
     
     // Load history from DB
@@ -135,7 +162,8 @@ export default function Home() {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setMessages(prev => [...prev, { role: 'bot', content: "You have been logged out.", feedback: null }]);
+    localStorage.removeItem('windvealUser'); // Clear persisted user
+    setMessages([{ role: 'bot', content: "You have been logged out.", feedback: null }]);
   };
 
   const handleNewChat = async () => {
