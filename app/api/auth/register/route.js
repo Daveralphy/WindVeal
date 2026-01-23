@@ -10,7 +10,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    // Create table if it doesn''t exist
+    // Create table if it doesn't exist
     try {
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (

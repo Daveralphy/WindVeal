@@ -67,53 +67,6 @@ const tryOpenAI = async (message, history) => {
   return data.choices[0].message.content;
 };
 
-const tryGrok = async (message, history) => {
-  const apiKey = process.env.GROK_API_KEY;
-  if (!apiKey) throw new Error("GROK_API_KEY not set");
-
-  const messages = [
-    { role: "system", content: persona.system_instruction },
-    ...history.map(msg => ({ role: msg.role === "bot" ? "assistant" : "user", content: msg.content })),
-    { role: "user", content: message }
-  ];
-
-  // Try only working Grok models (skip grok-vision which returns 403)
-  const modelNames = ["grok-1", "grok-2"];
-  let lastError;
-
-  for (const modelName of modelNames) {
-    try {
-      const response = await fetch("https://api.x.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: modelName,
-          messages,
-          temperature: 0.7,
-          max_tokens: 1024,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        lastError = new Error(error.error?.message || `Grok ${modelName} error: ${response.status}`);
-        continue;
-      }
-
-      const data = await response.json();
-      return data.choices[0].message.content;
-    } catch (e) {
-      lastError = e;
-      continue;
-    }
-  }
-
-  throw lastError || new Error("All Grok models failed");
-};
-
 export async function POST(req) {
   try {
     const { message, history = [] } = await req.json();
@@ -122,10 +75,10 @@ export async function POST(req) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
+    // Try models in order: Gemini  OpenAI (Grok removed due to 403 errors)
     const models = [
       { name: "Gemini", fn: tryGemini },
       { name: "OpenAI", fn: tryOpenAI },
-      { name: "Grok", fn: tryGrok },
     ];
 
     let lastError;
