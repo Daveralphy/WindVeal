@@ -524,6 +524,12 @@ export default function Home() {
           <div className="space-y-2">
             {currentUser ? (
               <>
+                <button 
+                  onClick={handleNewChat}
+                  className="md:hidden w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2"
+                >
+                  <PlusCircle size={20} /> New Chat
+                </button>
                 <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium flex items-center gap-2">
                   <UserCircle size={20} /> Profile
                 </button>
@@ -641,18 +647,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* New Chat Button (Always visible if logged in) */}
-          {currentUser && (
-             <div className="mt-4">
-               <button 
-                 onClick={handleNewChat}
-                 className="w-full flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-               >
-                 <PlusCircle size={18} />
-                 <span>New Chat</span>
-               </button>
-             </div>
-          )}
         </div>
 
         {/* Bottom User Section */}
@@ -823,33 +817,45 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 relative share-menu-container">
-            <button 
-              onClick={() => setIsShareOpen(!isShareOpen)}
-              className="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-              title="Share"
-            >
-              <Upload size={24} />
-            </button>
-
-            {isShareOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
-                <div className="p-2 space-y-1">
-                  <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Facebook size={18} className="text-blue-600" /> Facebook
-                  </button>
-                  <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <MessageCircle size={18} className="text-green-500" /> WhatsApp
-                  </button>
-                  <button onClick={() => handleShare('twitter')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Twitter size={18} className="text-sky-500" /> Twitter
-                  </button>
-                  <button onClick={() => handleShare('linkedin')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Linkedin size={18} className="text-blue-700" /> LinkedIn
-                  </button>
-                </div>
-              </div>
+          <div className="flex items-center gap-4">
+            {currentUser && (
+              <button 
+                onClick={handleNewChat}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
+              >
+                <PlusCircle size={18} />
+                <span>New Chat</span>
+              </button>
             )}
+
+            <div className="relative share-menu-container">
+              <button 
+                onClick={() => setIsShareOpen(!isShareOpen)}
+                className="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                title="Share"
+              >
+                <Upload size={24} />
+              </button>
+
+              {isShareOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                  <div className="p-2 space-y-1">
+                    <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                      <Facebook size={18} className="text-blue-600" /> Facebook
+                    </button>
+                    <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                      <MessageCircle size={18} className="text-green-500" /> WhatsApp
+                    </button>
+                    <button onClick={() => handleShare('twitter')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                      <Twitter size={18} className="text-sky-500" /> Twitter
+                    </button>
+                    <button onClick={() => handleShare('linkedin')} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                      <Linkedin size={18} className="text-blue-700" /> LinkedIn
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
