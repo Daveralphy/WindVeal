@@ -136,7 +136,7 @@ export default function Home() {
   };
 
   const saveChat = async (msgs, chatId) => {
-    if (!currentUser || msgs.length === 0) return;
+    if (!currentUser || msgs.length === 0) return chatId;
     
     try {
       const res = await fetch('/api/history', {
@@ -152,8 +152,10 @@ export default function Home() {
       if (data.success && data.chatId) {
         if (!chatId) setActiveChatId(data.chatId);
         loadChats(currentUser.id);
+        return data.chatId;
       }
     } catch (err) { console.error("Failed to save history", err); }
+    return chatId;
   };
 
   const handleAuthSuccess = async (user) => {
@@ -348,7 +350,7 @@ export default function Home() {
     setIsShareOpen(false);
   };
 
-  const animateResponse = async (text) => {
+  const animateResponse = async (text, chatId, baseMessages) => {
     // Add empty bot message
     setMessages(prev => [...prev, { role: 'bot', content: '', feedback: null }]);
     
@@ -373,7 +375,7 @@ export default function Home() {
       const delay = words[i].trim() === '' ? 20 : 60;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
-    saveChat([...messages, { role: 'bot', content: text }], activeChatId);
+    saveChat([...baseMessages, { role: 'bot', content: text, feedback: null }], chatId);
   };
 
   const handleSend = async (e, textOverride) => {
@@ -397,7 +399,7 @@ export default function Home() {
     setIsTyping(true);
     abortControllerRef.current = new AbortController();
 
-    saveChat(updatedMessages, activeChatId);
+    const chatId = await saveChat(updatedMessages, activeChatId);
 
     // --- LOCAL BRAIN LOGIC ---
     const lowerInput = userMsg.content.toLowerCase();
@@ -438,7 +440,7 @@ export default function Home() {
     }
 
     if (localResponse) {
-      await animateResponse(localResponse);
+      await animateResponse(localResponse, chatId, updatedMessages);
       setIsTyping(false);
       abortControllerRef.current = null;
       return;
@@ -461,7 +463,7 @@ export default function Home() {
       const data = await response.json();
 
       if (response.ok) {
-        await animateResponse(data.response);
+        await animateResponse(data.response, chatId, updatedMessages);
       } else {
         const errorMessage = data.error || "I'm having trouble connecting to the cloud.";
         setMessages(prev => [...prev, { role: 'bot', content: errorMessage, feedback: null }]);
