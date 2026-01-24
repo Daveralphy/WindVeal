@@ -2,7 +2,7 @@
 
 WindVeal (formerly Dave Chatbot) is a modern AI assistant built with **Next.js** and deployed on **Vercel**. It features a unique "Hybrid Intelligence" system that handles simple queries locally in the browser for instant responses, while leveraging **HuggingFace's Zephyr-7B** model for complex reasoning and creative tasks.
 
-[![WindVeal Chatbot](images/homepage.png)](https://windvealchatbot.vercel.app)
+[![WindVeal Chatbot](images/homepage.png)](https://daveralphy.github.io/WindVeal/)
 
 Click the image above to visit the live application.
 ---
