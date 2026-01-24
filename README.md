@@ -24,12 +24,11 @@ Click the image above to visit the live application.
 
 ```
 WindVeal/
-├── public/
-│   ├── index.html                    # Welcome landing page
-│   ├── styles/
-│   │   └── styles.css               # Welcome page styles
-│   ├── scripts/
-│   │   └── scripts.js               # Welcome page interactions
+├── index.html                   # Welcome landing page
+├── styles/
+│   └── styles.css               # Welcome page styles
+├── scripts/
+│   └── scripts.js               # Welcome page interactions
 │   └── favicon.ico
 ├── app/                             # Next.js App Router (Main Chat App)
 │   ├── api/
