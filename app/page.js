@@ -7,6 +7,7 @@ import intents from '@/data/intents.json';
 import suggestions from '@/app/suggestions.json';
 import AuthModal from '../components/AuthModal';
 import Settings from '../components/Settings';
+import logo from '@/images/logo.png';
 
 export default function Home() {
   const [messages, setMessages] = useState([]);
@@ -531,7 +532,7 @@ export default function Home() {
       <div className={`fixed top-0 left-0 w-64 md:w-72 bg-white dark:bg-gray-800 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} h-auto max-h-[90vh] md:h-full md:max-h-full rounded-b-2xl md:rounded-none overflow-hidden`}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+            <img src={logo.src} alt="Logo" className="w-8 h-8 object-contain" />
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <PanelLeft size={24} />
@@ -693,7 +694,7 @@ export default function Home() {
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
           {/* Mobile Footer: Logo & Version */}
           <div className="md:hidden flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
-            <img src="/images/logo.png" alt="Logo" className="w-6 h-6 object-contain opacity-70" />
+            <img src={logo.src} alt="Logo" className="w-6 h-6 object-contain opacity-70" />
             <span className="text-sm font-medium">WindVeal V2.0</span>
           </div>
 
@@ -937,7 +938,7 @@ export default function Home() {
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[60vh] opacity-80 animate-in fade-in zoom-in duration-500">
               <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                <img src="/images/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
+                <img src={logo.src} alt="Logo" className="w-16 h-16 object-contain" />
               </div>
               <h2 className="text-2xl font-bold text-primary dark:text-white mb-2">WindVeal</h2>
               <p className="text-gray-500 dark:text-gray-400">How can I help you today?</p>
@@ -1111,7 +1112,7 @@ export default function Home() {
             </button>
             
             <div className="flex flex-col items-center text-center mb-6">
-              <img src="/images/logo.png" alt="WindVeal Logo" className="w-20 h-20 object-contain mb-4" />
+              <img src={logo.src} alt="WindVeal Logo" className="w-20 h-20 object-contain mb-4" />
               <h2 className="text-2xl font-bold text-primary dark:text-white">WindVeal</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">Version 2.0.0</p>
             </div>
